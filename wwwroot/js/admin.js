@@ -72,7 +72,7 @@
 
   function render() {
     const s = state;
-    const key = `${s.phase}:${s.questionIndex}`;
+    const key = `${s.phase}:${s.questionIndex}:${s.paused}`;
     if (key === renderedKey && s.phase !== 'Lobby') {
       const meta = $('#answered');
       if (meta) meta.innerHTML = lockedText(s);
@@ -80,7 +80,10 @@
     }
     renderedKey = key;
     countdown.stop();
-    stage.classList.toggle('centered', s.phase === 'Question');
+    const asked = s.phase === 'Question' || s.phase === 'Reveal';
+    stage.classList.toggle('centered', asked);
+    stage.classList.toggle('with-image', asked && !!s.question?.image);
+    stage.classList.remove('pic-wide');
     switch (s.phase) {
       case 'Lobby': stage.innerHTML = lobby(s); break;
       case 'Countdown': countdownScreen(s); break;
@@ -89,6 +92,13 @@
       case 'Leaderboard': stage.innerHTML = standings(s); break;
       case 'Awards': stage.innerHTML = awards(s); break;
       case 'Finished': stage.innerHTML = podium(s); break;
+    }
+    // Host paused the timer: freeze the clock and say so on the big screen.
+    if (s.paused && (s.phase === 'Question' || s.phase === 'Countdown')) {
+      countdown.stop();
+      const t = $('#timer') || $('#cd');
+      if (t) { t.textContent = Math.ceil(s.remainingMs / 1000); t.classList.remove('danger'); }
+      stage.insertAdjacentHTML('beforeend', '<div class="paused-overlay"><b>Paused</b><span>The host will continue in a moment</span></div>');
     }
   }
 
@@ -139,6 +149,7 @@
     return `<div class="lobby">
       <div class="join-center">
         <div class="mark">Qvizz<i>.</i></div>
+        <h1 class="quiz-name">${esc(s.quizTitle)}</h1>
         <div class="join">
           <h2>Scan to join</h2>
           <div class="qr">${qrSvg(joinUrl)}</div>
@@ -176,26 +187,31 @@
     });
   }
 
-  // ----- ticker of positions -----
-  function ticker(s) {
-    // Before anyone has scored, ranks and +0 chips mean nothing: show who's playing.
-    const fresh = s.players.every(p => p.score === 0);
-    const items = s.players.map(p => fresh
-      ? `<span class="pos">${face(p)}${esc(p.nickname)}</span>`
-      : `<span class="pos"><span class="rk">${p.rank}</span>${face(p)}${esc(p.nickname)} <span class="num">${fmt(p.score)}</span><span class="chip ${p.gain ? '' : 'zero'}">+${p.gain}</span></span>`).join('');
-    return `<div class="ticker" id="ticker"><div class="ticker-track">${items}</div></div>`;
-  }
-  function startCrawl() {
-    const t = $('#ticker'); if (!t) return;
-    const track = t.firstElementChild;
-    if (track.scrollWidth > t.clientWidth) {
-      track.innerHTML += track.innerHTML;                         // seamless loop
-      t.style.setProperty('--crawl', `${Math.max(20, track.scrollWidth / 90)}s`);
-      t.classList.add('crawl');
-    }
-  }
+  // Question text size by length; next to a picture the column is narrower, so one step smaller.
+  const qSize = (text, pic) => pic
+    ? (text.length > 90 ? 34 : text.length > 55 ? 40 : 46)
+    : (text.length > 110 ? 44 : text.length > 70 ? 52 : 60);
 
-  const qSize = text => text.length > 110 ? 44 : text.length > 70 ? 52 : 60;
+  // Questions with a picture: the picture big on the left, like a photo card laid on the board,
+  // with the question and answers stacked on the right. The picture is shown whole (never cropped);
+  // a blurred copy of it fills any spare space in the frame so portrait and landscape both look full.
+  // Landscape pictures get the stacked arrangement: question on top, picture in the middle, answers (2×2) at the bottom.
+  window.picShape = img => {
+    // Number questions keep the side-by-side layout: their answer chart needs the height.
+    const stage = img.closest('.stage');
+    const wide = img.naturalWidth && img.naturalHeight && img.naturalWidth / img.naturalHeight > 1.2 && !stage?.querySelector('.chart');
+    stage?.classList.toggle('pic-wide', !!wide);
+  };
+
+  function layout(s, content) {
+    const img = s.question?.image;
+    if (!img) return content;
+    const src = esc(img);
+    return `<figure class="pic">
+        <div class="frame"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="" onload="picShape(this)"></div>
+      </figure>
+      <div class="q-side">${content}</div>`;
+  }
 
   function lockedText(s) {
     const t = s.question?.type;
@@ -205,9 +221,8 @@
 
   function card(s, side, meta) {
     const q = s.question;
-    return `<section class="qcard" style="--qsize:${qSize(q.text)}px">
+    return `<section class="qcard" style="--qsize:${qSize(q.text, !!q.image)}px">
       <h1>${esc(q.text)}</h1>
-      ${q.image ? `<img class="qimg" src="${esc(q.image)}" alt="">` : ''}
       <div class="meta" id="answered">${meta}</div>
       <div class="clock">${side}</div>
     </section>`;
@@ -233,7 +248,7 @@
     }
     // No standings ticker while a question is running: players focus on the question.
     // Scores come back on the reveal and the standings screen.
-    stage.innerHTML = card(s, clock, lockedText(s)) + body;
+    stage.innerHTML = layout(s, card(s, clock, lockedText(s)) + body);
     countdown.start(s.remainingMs, secs => renderTimer($('#timer'), secs));
   }
 
@@ -271,8 +286,7 @@
       meta = best ? `Closest: <strong>${winners.join(', ')}</strong> guessed ${fmt(best.guess)} · +${best.points}` : 'Nobody guessed this time';
       body = numberReveal(q, r);
     }
-    stage.innerHTML = ticker(s) + card(s, nextButton(s), meta) + body;
-    startCrawl();
+    stage.innerHTML = layout(s, card(s, nextButton(s), meta) + body);
     // grow the vote-volume bars once the rows are on screen
     requestAnimationFrame(() => requestAnimationFrame(() =>
       stage.querySelectorAll('.row[data-v] .vol').forEach(v => v.style.width = v.parentElement.dataset.v + '%')));
@@ -309,12 +323,15 @@
   }
 
   // ----- standings -----
+  // 3+ questions kept in a row: a small fire and the +5 streak bonus next to the name.
+  const streak = p => p.streak >= 3
+    ? `<span class="streak" title="${p.streak} in a row">🔥<small>+${p.streakBonus}</small></span>` : '';
   function standings(s) {
     const lines = s.leaderboard.map((p, i) => {
       const m = move(p);
       return `<div class="line ${i === 0 ? 'first' : ''}" style="animation-delay:${i * 80}ms">
         <span class="rank">${p.rank}</span><span class="move ${m.cls}">${m.icon}${m.n}</span>${face(p)}
-        <span class="nm">${esc(p.nickname)}</span><span class="chip ${p.gain ? '' : 'zero'}">+${p.gain}</span><span class="total">${fmt(p.score)}</span></div>`;
+        <span class="nm"><span class="nm-text">${esc(p.nickname)}</span>${streak(p)}</span><span class="chip ${p.gain - p.bonus - p.streakBonus ? '' : 'zero'}">+${p.gain - p.bonus - p.streakBonus}</span><span class="chip bonus ${p.bonus ? '' : 'zero'}">+${p.bonus}</span><span class="total">${fmt(p.score)}</span></div>`;
     }).join('');
     // trade of the round: biggest climb, then biggest gain
     const climber = [...s.players].sort((a, b) => ((b.prevRank - b.rank) - (a.prevRank - a.rank)) || (b.gain - a.gain))[0];
@@ -322,7 +339,7 @@
     const played = s.questionIndex + 1, left = s.questionCount - played;
     return `<div class="standings">
       <h1>Standings<span>after Q ${played} / ${s.questionCount}</span></h1>
-      <div class="sheet"><div class="head"><span>Rank</span><span></span><span></span><span>Player</span><span class="r">This round</span><span class="r">Total</span></div>${lines}</div>
+      <div class="sheet"><div class="head"><span>Rank</span><span></span><span></span><span>Player</span><span class="r">Answer</span><span class="r">Speed bonus</span><span class="r">Total</span></div>${lines}</div>
       <div class="side">
         ${climber ? `<div class="trade"><h2>Trade of the round</h2><div class="p">${face(climber)}<div><b>${esc(climber.nickname)}</b>
           <small>${climb > 0 ? `climbed ${climb} place${climb === 1 ? '' : 's'} with +${climber.gain}` : `+${climber.gain} this round`}</small></div></div></div>` : ''}

@@ -20,6 +20,8 @@ public sealed class GameEntity
     /// <summary>The current reveal (votes, closest guesses…) as JSON, so a restart shows the same screen.</summary>
     public string? RevealJson { get; set; }
     public string? AwardsJson { get; set; }
+    /// <summary>When the host paused the timer: how much time was left. Null when running.</summary>
+    public int? PausedRemainingMs { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
     public DateTimeOffset? FinishedAt { get; set; }
@@ -43,6 +45,7 @@ public sealed class PlayerEntity
     public int Rank { get; set; }
     public int PrevRank { get; set; }
     public int LastGain { get; set; }
+    public int Streak { get; set; }
     public string? Boost { get; set; }
     public Guid? BoostRivalId { get; set; }
     public DateTimeOffset JoinedAt { get; set; }
@@ -79,6 +82,8 @@ public sealed class AnswerEntity
     public int Points { get; set; }
     public int Bonus { get; set; }
     public int GoodPairs { get; set; }
+    public int StreakBonus { get; set; }
+    public int StreakAfter { get; set; }
     public int? RankAfter { get; set; }
     public string? Detail { get; set; }
 }

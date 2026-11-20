@@ -4,6 +4,7 @@ A Kahoot-style quiz for friends. ASP.NET Core (.NET 10) + SignalR + EF Core / Po
 
 - `/admin`: presenter screen (password protected), shown on the big screen.
 - `/game`: player screen for phones.
+- `/host`: host remote for your phone (same password as `/admin`): start, pause / resume, next, remove players, new game. Use it while the big screen shows `/admin`.
 
 ## Run
 
@@ -56,6 +57,8 @@ Edit `Quiz/quiz.json` and restart. Put images in `wwwroot/images/` and reference
 Question types: `MultipleChoice` (4 options + `correctIndex`), `TrueFalse` (`correctBool`),
 `Grouping` (`pairs` of `left`/`right`, each with `text` and/or `image`), `ClosestNumber` (`correctNumber`, optional `unit`).
 Any question can override its time with `timeLimitSeconds`.
+Any question can have a picture: `"image": "/images/file.jpg"`. It shows large on the presenter screen only
+(landscape pictures between the question and the answers, portrait ones beside them). Use JPG/PNG/WebP around 1600px wide.
 
 ## Look and feel
 
@@ -75,6 +78,9 @@ players' drawn faces as pawns) with answers laid out like trading positions and 
 - Multiple choice: 100, true/false: 80, grouping: 20 per correct pair.
 - Speed bonus for correct answers, in order of answering: 20, 18, 16, 15, 14 … 1, then 0. For grouping, anyone with at least one correct pair qualifies.
 - Closest number: 100, 90, 80, 70, 65, 60 … 5 by distance, then 0. Equal distances share the better place.
+- Streak: a question is "kept" with a correct answer; on matching with at least half the pairs right (2 of 4, 3 of 5);
+  on closest number by being in the better half of all players (at least the closest). From the 3rd kept question in a
+  row, each kept question earns +5 and the player gets a 🔥 on the standings. A miss or no answer resets the streak.
 - Answers can be changed until the time runs out; the time of the last change counts for the speed bonus.
 - Multiple choice / true-false end as soon as every connected player has answered. Grouping and closest-number
   always run the full time, and whatever is on the player's phone at that moment is scored.

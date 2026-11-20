@@ -1,6 +1,9 @@
 namespace Qvizz.Game;
 
-/// <summary>Random encouraging messages shown on the player's phone after each question.</summary>
+/// <summary>
+/// Random encouraging messages shown on the player's phone after each question.
+/// After the last question nothing can change any more, so a separate set looks back instead of ahead.
+/// </summary>
 public static class BoostMessages
 {
     private static readonly string[] First =
@@ -47,23 +50,65 @@ public static class BoostMessages
         "Plenty of questions left. Stay in the game!"
     ];
 
+    // ----- after the last question -----
+
+    private static readonly string[] FinalFirst =
+    [
+        "You finished first. What a game!",
+        "Top of the table at the final whistle!",
+        "Number one when it counted!"
+    ];
+
+    private static readonly string[] FinalFirstWithLead =
+    [
+        "You finished first, {gap} points ahead of {name}!",
+        "First place, {gap} points clear of {name}. Well played!"
+    ];
+
+    private static readonly string[] FinalSharedFirst =
+    [
+        "You share first place with {name}!",
+        "A dead heat at the top with {name}!"
+    ];
+
+    private static readonly string[] FinalBehind =
+    [
+        "You finished just {gap} points behind {name}. So close!",
+        "Only {gap} points between you and {name} at the end!",
+        "{name} edged you by {gap} points. Rematch?"
+    ];
+
+    private static readonly string[] FinalTied =
+    [
+        "You finished level with {name}!",
+        "Dead even with {name} at the finish!"
+    ];
+
+    private static readonly string[] FinalNoPoints =
+    [
+        "Thanks for playing! Next time it's yours.",
+        "Not your night, but what a game!"
+    ];
+
     /// <summary>Returns the message and the rival it mentions (shown as a face next to it), if any.</summary>
-    public static (string Text, PlayerState? Rival) For(int rank, int score, PlayerState? above, PlayerState? below, PlayerState? tiedWith)
+    public static (string Text, PlayerState? Rival) For(int rank, int score, PlayerState? above, PlayerState? below,
+        PlayerState? tiedWith, bool final = false)
     {
         (string, PlayerState?) Fill(string[] pool, PlayerState? other, int gap) =>
             (Pick(pool).Replace("{name}", other?.Nickname ?? "")
                 .Replace("{gap} points", gap == 1 ? "1 point" : $"{gap} points")
                 .Replace("{gap}", gap.ToString()), other);
 
-        if (score == 0 && rank > 1) return (Pick(NoPoints), null);
-        if (tiedWith is not null) return Fill(rank == 1 ? SharedFirst : Tied, tiedWith, 0);
+        if (score == 0 && rank > 1) return (Pick(final ? FinalNoPoints : NoPoints), null);
+        if (tiedWith is not null)
+            return Fill(rank == 1 ? (final ? FinalSharedFirst : SharedFirst) : (final ? FinalTied : Tied), tiedWith, 0);
         if (rank == 1)
         {
             return below is not null && Random.Shared.Next(2) == 0
-                ? Fill(FirstWithLead, below, score - below.Score)
-                : (Pick(First), null);
+                ? Fill(final ? FinalFirstWithLead : FirstWithLead, below, score - below.Score)
+                : (Pick(final ? FinalFirst : First), null);
         }
-        return Fill(Behind, above, above!.Score - score);
+        return Fill(final ? FinalBehind : Behind, above, above!.Score - score);
     }
 
     private static string Pick(string[] pool) => pool[Random.Shared.Next(pool.Length)];

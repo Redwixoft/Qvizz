@@ -57,6 +57,7 @@ public sealed class GameService
     private int _phaseVersion;              // invalidates stale timers
     private RevealInfo? _reveal;
     private IReadOnlyList<Award> _awards = [];
+    private TimeSpan? _pausedRemaining;     // set while the host has paused the timer
 
     public QuizDefinition Quiz { get; }
     public bool Persistent => _db.Enabled;
@@ -89,7 +90,7 @@ public sealed class GameService
                 .Where(g => g.Status == GameStatus.Active)
                 .OrderByDescending(g => g.CreatedAt).FirstOrDefaultAsync();
 
-            if (game is null || game.QuizTitle != Quiz.Title && game.Phase != nameof(Phase.Lobby))
+            if (game is null || game.QuizTitle != Quiz.DisplayName && game.Phase != nameof(Phase.Lobby))
             {
                 // No game yet, or the quiz file changed under a running game: start fresh.
                 if (game is not null) await ArchiveInDbAsync(db, game.Id);
@@ -120,6 +121,7 @@ public sealed class GameService
         _answerSeq = g.AnswerSeq;
         _nextSeat = g.NextSeat;
         _reveal = g.RevealJson is null ? null : JsonSerializer.Deserialize<RevealInfo>(g.RevealJson, Json);
+        _pausedRemaining = g.PausedRemainingMs is int pausedMs ? TimeSpan.FromMilliseconds(pausedMs) : null;
         _awards = g.AwardsJson is null ? [] : JsonSerializer.Deserialize<List<Award>>(g.AwardsJson, Json) ?? [];
 
         var players = await db.Players.AsNoTracking().Where(p => p.GameId == g.Id && p.KickedAt == null).ToListAsync();
@@ -132,7 +134,7 @@ public sealed class GameService
             var p = new PlayerState
             {
                 Id = row.Id, Nickname = row.Nickname, Seat = row.Seat, JoinedAt = row.JoinedAt,
-                Score = row.Score, Rank = row.Rank, PrevRank = row.PrevRank, LastGain = row.LastGain,
+                Score = row.Score, Rank = row.Rank, PrevRank = row.PrevRank, LastGain = row.LastGain, Streak = row.Streak,
                 Boost = row.Boost, BoostRivalId = row.BoostRivalId, AvatarVersion = row.AvatarVersion,
                 AvatarPng = avatars.TryGetValue(row.Id, out var av) ? av.Png : null
             };
@@ -142,7 +144,7 @@ public sealed class GameService
                 {
                     p.History[a.QuestionIndex] = new AnswerRecord(a.QuestionIndex, a.AnsweredAt is not null, a.Correct,
                         a.Points, a.Bonus, a.GoodPairs, a.Changes, a.ResponseMs, a.RemainingMs, a.RankAfter ?? row.Rank,
-                        a.Choice, a.Number, a.Detail ?? "");
+                        a.Choice, a.Number, a.Detail ?? "", a.StreakBonus, a.StreakAfter);
                 }
                 if (a.QuestionIndex == _questionIndex && a.AnsweredAt is not null)
                 {
@@ -154,14 +156,15 @@ public sealed class GameService
                 }
             }
             if (_questionIndex >= 0 && p.History.TryGetValue(_questionIndex, out var rec) && _phase != Phase.Question)
-                p.LastResult = new QuestionResult(rec.Correct, rec.Points, rec.Bonus, rec.Detail);
+                p.LastResult = new QuestionResult(rec.Correct, rec.Points, rec.Bonus, rec.Detail, rec.StreakBonus, rec.Streak);
             _players[p.Id] = p;
         }
 
         _log.LogInformation("Restored game {Id} in phase {Phase} (question {Q}) with {N} players",
             _gameId, _phase, _questionIndex + 1, _players.Count);
 
-        // Resume timers. If a deadline passed while the server was down, the transition fires right away.
+        // Resume timers (unless the host had paused). If a deadline passed while the server was down, the transition fires right away.
+        if (_pausedRemaining is not null) return;
         if (_phase == Phase.Countdown) { _phaseVersion++; ScheduleTimer(() => BeginQuestion(0)); }
         else if (_phase == Phase.Question) { _phaseVersion++; ScheduleTimer(EndQuestion); }
     }
@@ -171,7 +174,7 @@ public sealed class GameService
     private void SaveGame() => _db.Save(new GameEntity
     {
         Id = _gameId,
-        QuizTitle = Quiz.Title,
+        QuizTitle = Quiz.DisplayName,
         Status = GameStatus.Active,
         Phase = _phase.ToString(),
         QuestionIndex = _questionIndex,
@@ -182,6 +185,7 @@ public sealed class GameService
         NextSeat = _nextSeat,
         RevealJson = _reveal is null ? null : JsonSerializer.Serialize(_reveal, Json),
         AwardsJson = _awards.Count == 0 ? null : JsonSerializer.Serialize(_awards, Json),
+        PausedRemainingMs = _pausedRemaining is { } left ? (int)left.TotalMilliseconds : null,
         CreatedAt = _createdAt,
         StartedAt = _startedAt,
         FinishedAt = _finishedAt
@@ -190,7 +194,7 @@ public sealed class GameService
     private void SavePlayer(PlayerState p, DateTimeOffset? kickedAt = null) => _db.Save(new PlayerEntity
     {
         Id = p.Id, GameId = _gameId, Nickname = p.Nickname, Seat = p.Seat, AvatarVersion = p.AvatarVersion,
-        Score = p.Score, Rank = p.Rank, PrevRank = p.PrevRank, LastGain = p.LastGain,
+        Score = p.Score, Rank = p.Rank, PrevRank = p.PrevRank, LastGain = p.LastGain, Streak = p.Streak,
         Boost = p.Boost, BoostRivalId = p.BoostRivalId, JoinedAt = p.JoinedAt, KickedAt = kickedAt
     });
 
@@ -204,7 +208,8 @@ public sealed class GameService
             Choice = a?.Choice, Grouping = a?.Grouping, Number = a?.Number, AnsweredAt = a?.At, Seq = a?.Seq ?? 0,
             Changes = a?.Changes ?? 0, ResponseMs = a?.ResponseMs, RemainingMs = a?.RemainingMs,
             Scored = rec is not null, Correct = rec?.Correct ?? false, Points = rec?.Points ?? 0, Bonus = rec?.Bonus ?? 0,
-            GoodPairs = rec?.GoodPairs ?? 0, RankAfter = rec?.RankAfter, Detail = rec?.Detail
+            GoodPairs = rec?.GoodPairs ?? 0, RankAfter = rec?.RankAfter, Detail = rec?.Detail,
+            StreakBonus = rec?.StreakBonus ?? 0, StreakAfter = rec?.Streak ?? 0
         });
     }
 
@@ -389,6 +394,7 @@ public sealed class GameService
     /// <summary>Ends a multiple-choice / true-false question once every connected player has answered.</summary>
     private bool TryEndEarly()
     {
+        if (_pausedRemaining is not null) return false;   // the host paused: wait for them
         if (_phase != Phase.Question || CurrentQuestion.Type is not (QuestionType.MultipleChoice or QuestionType.TrueFalse))
             return false;
         var connected = _players.Values.Where(p => p.Connected).ToList();
@@ -425,6 +431,39 @@ public sealed class GameService
             _startedAt = DateTimeOffset.UtcNow;
             EnterPhase(Phase.Countdown, TimeSpan.FromSeconds(_options.CountdownSeconds));
             ScheduleTimer(() => BeginQuestion(0));
+            SaveGame();
+            await PushAllAsync();
+        }
+        finally { _gate.Release(); }
+    }
+
+    /// <summary>Freezes the countdown / question timer. Players can still change their answers.</summary>
+    public async Task PauseAsync()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            if (_phase is not (Phase.Countdown or Phase.Question) || _pausedRemaining is not null) return;
+            var left = _phaseEndsAt - DateTimeOffset.UtcNow;
+            _pausedRemaining = left < TimeSpan.Zero ? TimeSpan.Zero : left;
+            _phaseVersion++;   // cancels the running timer
+            SaveGame();
+            await PushAllAsync();
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task ResumeAsync()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            if (_pausedRemaining is not { } left) return;
+            _pausedRemaining = null;
+            _phaseEndsAt = DateTimeOffset.UtcNow + left;
+            _phaseVersion++;
+            ScheduleTimer(_phase == Phase.Countdown ? () => BeginQuestion(0) : EndQuestion);
+            TryEndEarly();   // everyone may have answered while paused
             SaveGame();
             await PushAllAsync();
         }
@@ -477,7 +516,7 @@ public sealed class GameService
             {
                 _db.Save(new GameEntity
                 {
-                    Id = _gameId, QuizTitle = Quiz.Title, Status = GameStatus.Archived, Phase = _phase.ToString(),
+                    Id = _gameId, QuizTitle = Quiz.DisplayName, Status = GameStatus.Archived, Phase = _phase.ToString(),
                     QuestionIndex = _questionIndex, PhaseLengthMs = (int)_phaseLength.TotalMilliseconds,
                     GroupRightOrder = _groupRightOrder, AnswerSeq = _answerSeq, NextSeat = _nextSeat,
                     RevealJson = _reveal is null ? null : JsonSerializer.Serialize(_reveal, Json),
@@ -528,6 +567,7 @@ public sealed class GameService
         _nextSeat = 1;
         _reveal = null;
         _awards = [];
+        _pausedRemaining = null;
         _gameId = Guid.NewGuid();
         _createdAt = DateTimeOffset.UtcNow;
         _startedAt = _finishedAt = null;
@@ -540,6 +580,7 @@ public sealed class GameService
         _phase = phase;
         _phaseLength = length;
         _phaseEndsAt = DateTimeOffset.UtcNow + length;
+        _pausedRemaining = null;
     }
 
     private void ScheduleTimer(Action onElapsed)
@@ -594,6 +635,7 @@ public sealed class GameService
         var q = CurrentQuestion;
         var answered = _players.Values.Where(p => p.CurrentAnswer is not null).ToList();
         var goodPairs = new Dictionary<Guid, int>();
+        var keeps = new HashSet<Guid>();   // players who keep their streak on this question
         foreach (var p in _players.Values.Except(answered))
             p.LastResult = new QuestionResult(false, 0, 0, "No answer - time ran out.");
 
@@ -613,6 +655,7 @@ public sealed class GameService
                 p.LastResult = new QuestionResult(rank == 0, pts, 0,
                     d == 0 ? $"Spot on! You guessed {Fmt(guess)}." : $"You guessed {Fmt(guess)} (off by {Fmt(d)}). Place #{rank + 1}.");
                 if (rank == 0) correctPlayers++;
+                if (Scoring.KeepsStreakOnNumber(rank, _players.Count)) keeps.Add(p.Id);
             }
             closest = withDistance.OrderBy(x => x.d).ThenBy(x => x.p.CurrentAnswer!.Seq)
                 .Take(5).Select(x => new ClosestGuess(x.p.Nickname, x.p.AvatarUrl, x.p.Seat, x.p.CurrentAnswer!.Number!.Value, x.p.LastResult!.Points)).ToList();
@@ -631,6 +674,7 @@ public sealed class GameService
                 {
                     var good = a.Grouping!.Select((pos, left) => _groupRightOrder[pos] == left).Count(x => x);
                     goodPairs[p.Id] = good;
+                    if (Scoring.KeepsStreakOnMatching(good, q.Pairs.Count)) keeps.Add(p.Id);
                     r = (good * Scoring.GroupingPointsPerPair, $"{good} of {q.Pairs.Count} pairs correct.", good == q.Pairs.Count);
                     if (good > 0) bonusInOrder.Add(p);
                 }
@@ -640,7 +684,7 @@ public sealed class GameService
                     var ok = a.Choice == q.EffectiveCorrectIndex;
                     var full = q.Type == QuestionType.TrueFalse ? Scoring.TrueFalsePoints : Scoring.MultipleChoicePoints;
                     r = (ok ? full : 0, ok ? "Correct!" : "Not this time.", ok);
-                    if (ok) bonusInOrder.Add(p);
+                    if (ok) { bonusInOrder.Add(p); keeps.Add(p.Id); }
                 }
                 basePoints[p.Id] = r;
                 if (r.correct) correctPlayers++;
@@ -652,6 +696,17 @@ public sealed class GameService
                 var bonus = position >= 0 ? Scoring.SpeedBonus(position) : 0;
                 p.LastResult = new QuestionResult(correct, pts + bonus, bonus, detail);
             }
+        }
+
+        // Streaks: kept with a correct answer (matching: at least half the pairs; closest number: the better
+        // half of all players). From the 3rd question in a row, each kept question earns +5.
+        foreach (var p in _players.Values)
+        {
+            p.Streak = keeps.Contains(p.Id) ? p.Streak + 1 : 0;
+            if (p.Streak >= Scoring.StreakFrom)
+                p.LastResult = p.LastResult! with { Points = p.LastResult.Points + Scoring.StreakBonus, StreakBonus = Scoring.StreakBonus, Streak = p.Streak };
+            else
+                p.LastResult = p.LastResult! with { Streak = p.Streak };
         }
 
         // While nobody has scored yet everyone is tied at #1, so the first scored
@@ -675,7 +730,7 @@ public sealed class GameService
             var r = p.LastResult!;
             p.History[_questionIndex] = new AnswerRecord(_questionIndex, a is not null, r.Correct, r.Points, r.Bonus,
                 goodPairs.GetValueOrDefault(p.Id), a?.Changes ?? 0, a?.ResponseMs, a?.RemainingMs, p.Rank,
-                a?.Choice, a?.Number, r.Detail);
+                a?.Choice, a?.Number, r.Detail, r.StreakBonus, r.Streak);
         }
 
         // The first three fully-correct players, in answer order, get their faces on the reveal.
@@ -721,7 +776,7 @@ public sealed class GameService
             var tied = all.FirstOrDefault(o => o != p && o.Score == p.Score);
             var (text, rival) = all.Count == 1
                 ? ("You're the only player - guaranteed gold!", null)
-                : BoostMessages.For(p.Rank, p.Score, above, below, tied);
+                : BoostMessages.For(p.Rank, p.Score, above, below, tied, final: _questionIndex >= Quiz.Questions.Count - 1);
             p.Boost = text;
             p.BoostRivalId = rival?.Id;
         }
@@ -729,12 +784,18 @@ public sealed class GameService
 
     // ======================= Views & pushes =======================
 
-    private int RemainingMs => _phase is Phase.Countdown or Phase.Question
+    private int RemainingMs => _pausedRemaining is { } frozen ? (int)frozen.TotalMilliseconds
+        : _phase is Phase.Countdown or Phase.Question
         ? Math.Max(0, (int)(_phaseEndsAt - DateTimeOffset.UtcNow).TotalMilliseconds)
         : 0;
 
     private PlayerSummary Summary(PlayerState p) =>
-        new(p.Id, p.Nickname, p.AvatarUrl, p.Score, p.Rank, p.PrevRank, p.LastGain, p.Seat, p.Connected, p.CurrentAnswer is not null);
+        new(p.Id, p.Nickname, p.AvatarUrl, p.Score, p.Rank, p.PrevRank, p.LastGain,
+            // speed bonus from the last scored question (shown split out on the standings)
+            _questionIndex >= 0 && p.History.TryGetValue(_questionIndex, out var rec) ? rec.Bonus : 0,
+            _questionIndex >= 0 && p.History.TryGetValue(_questionIndex, out var rec2) ? rec2.StreakBonus : 0,
+            p.Streak,
+            p.Seat, p.Connected, p.CurrentAnswer is not null);
 
     private PublicQuestion? BuildPublicQuestion()
     {
@@ -756,7 +817,7 @@ public sealed class GameService
         var ordered = Ordered();
         var showBoard = _phase is Phase.Leaderboard or Phase.Finished;
         return new AdminView(
-            _phase, Quiz.Title, _questionIndex, Quiz.Questions.Count, RemainingMs, (int)_phaseLength.TotalMilliseconds,
+            _phase, Quiz.DisplayName, _questionIndex, Quiz.Questions.Count, RemainingMs, (int)_phaseLength.TotalMilliseconds,
             ordered.Select(Summary).ToList(),
             BuildPublicQuestion(),
             _players.Values.Count(p => p.CurrentAnswer is not null),
@@ -764,6 +825,7 @@ public sealed class GameService
             showBoard ? ordered.Take(5).Select(Summary).ToList() : [],
             _phase == Phase.Awards ? AwardViews() : [],
             string.IsNullOrWhiteSpace(_options.PublicUrl) ? null : _options.PublicUrl,
+            _pausedRemaining is not null,
             _db.Enabled);
     }
 
@@ -794,7 +856,33 @@ public sealed class GameService
             correctAnswer,
             showResult || _phase == Phase.Finished ? p.Boost : null,
             showResult ? rival : null,
-            _phase is Phase.Awards or Phase.Finished ? AwardViews().Where(a => a.Winner.Id == p.Id).ToList() : []);
+            _phase is Phase.Awards or Phase.Finished ? AwardViews().Where(a => a.Winner.Id == p.Id).ToList() : [],
+            _pausedRemaining is not null,
+            _phase == Phase.Finished ? Recap(p) : []);
+    }
+
+    /// <summary>The player's answers next to the right ones, for the final phone screen.</summary>
+    private IReadOnlyList<RecapItem> Recap(PlayerState p)
+    {
+        var items = new List<RecapItem>();
+        for (var i = 0; i < Quiz.Questions.Count; i++)
+        {
+            var q = Quiz.Questions[i];
+            p.History.TryGetValue(i, out var r);
+            var answered = r?.Answered == true;
+            string Opt(int idx) => $"{(char)('A' + idx)}: {q.EffectiveOptions[idx]}";
+            string Num(double v) => Fmt(v) + (q.Unit is null ? "" : " " + q.Unit);
+            var (yours, correct) = q.Type switch
+            {
+                QuestionType.MultipleChoice or QuestionType.TrueFalse =>
+                    (answered && r!.Choice is int c ? Opt(c) : "No answer", Opt(q.EffectiveCorrectIndex)),
+                QuestionType.ClosestNumber =>
+                    (answered && r!.Number is double n ? Num(n) : "No answer", Num(q.CorrectNumber!.Value)),
+                _ => (answered ? $"{r!.GoodPairs} of {q.Pairs.Count} pairs right" : "No answer", (string?)null)
+            };
+            items.Add(new RecapItem(i + 1, q.Text, yours, correct, r?.Points ?? 0, r?.Correct ?? false, answered));
+        }
+        return items;
     }
 
     private Task PushAdminAsync() => _hub.Clients.Group(AdminsGroup).SendAsync("adminState", BuildAdminView());

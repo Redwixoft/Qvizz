@@ -61,7 +61,13 @@ public sealed class Question
 
 public sealed class QuizDefinition
 {
-    public string Title { get; set; } = "Qvizz";
+    /// <summary>The quiz name shown in the lobby, e.g. "Christmas Party Quiz 2026". ("title" is accepted too.)</summary>
+    public string? Name { get; set; }
+    public string? Title { get; set; }
+
+    [JsonIgnore]
+    public string DisplayName => !string.IsNullOrWhiteSpace(Name) ? Name.Trim()
+        : !string.IsNullOrWhiteSpace(Title) ? Title.Trim() : "Qvizz";
     public List<Question> Questions { get; set; } = [];
 
     public static QuizDefinition Load(string path)

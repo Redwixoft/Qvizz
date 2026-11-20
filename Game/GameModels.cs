@@ -28,7 +28,8 @@ public sealed class SubmittedAnswer
     public int RemainingMs { get; init; }
 }
 
-public sealed record QuestionResult(bool Correct, int Points, int Bonus, string Detail);
+/// <summary>Points = answer + speed bonus + streak bonus. Streak = questions in a row the player has "kept" (see Scoring).</summary>
+public sealed record QuestionResult(bool Correct, int Points, int Bonus, string Detail, int StreakBonus = 0, int Streak = 0);
 
 /// <summary>A scored question for one player; kept for the awards and for restoring after a restart.</summary>
 public sealed record AnswerRecord(
@@ -44,7 +45,9 @@ public sealed record AnswerRecord(
     int RankAfter,
     int? Choice,
     double? Number,
-    string Detail);
+    string Detail,
+    int StreakBonus = 0,
+    int Streak = 0);
 
 public sealed class PlayerState
 {
@@ -58,6 +61,8 @@ public sealed class PlayerState
     public int PrevRank { get; set; }
     /// <summary>Points from the last scored question (kept while the next question runs, for the ticker).</summary>
     public int LastGain { get; set; }
+    /// <summary>Questions in a row the player has kept (correct, or good enough on matching / closest-number).</summary>
+    public int Streak { get; set; }
     /// <summary>1-based join order; also picks the player's colour.</summary>
     public int Seat { get; init; }
     public DateTimeOffset JoinedAt { get; init; }
@@ -76,7 +81,7 @@ public sealed class PlayerState
 // ---------- DTOs sent to clients ----------
 
 public sealed record PlayerSummary(
-    Guid Id, string Nickname, string? AvatarUrl, int Score, int Rank, int PrevRank, int Gain, int Seat,
+    Guid Id, string Nickname, string? AvatarUrl, int Score, int Rank, int PrevRank, int Gain, int Bonus, int StreakBonus, int Streak, int Seat,
     bool Connected, bool Answered);
 
 public sealed record PublicQuestion(
@@ -121,6 +126,7 @@ public sealed record AdminView(
     IReadOnlyList<PlayerSummary> Leaderboard,
     IReadOnlyList<AwardView> Awards,
     string? JoinUrl,
+    bool Paused,
     bool Persistent);
 
 public sealed record PlayerView(
@@ -140,4 +146,9 @@ public sealed record PlayerView(
     string? CorrectAnswer,
     string? Boost,
     PlayerSummary? BoostRival,
-    IReadOnlyList<AwardView> MyAwards);
+    IReadOnlyList<AwardView> MyAwards,
+    bool Paused,
+    IReadOnlyList<RecapItem> Recap);
+
+/// <summary>One line of a player's end-of-game recap: their answer next to the right one.</summary>
+public sealed record RecapItem(int Number, string Question, string YourAnswer, string? CorrectAnswer, int Points, bool Correct, bool Answered);

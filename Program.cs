@@ -41,6 +41,7 @@ app.UseStaticFiles();
 app.MapGet("/", () => Results.Redirect("/game"));
 app.MapGet("/admin", (IWebHostEnvironment env) => Results.File(Path.Combine(env.WebRootPath, "admin.html"), "text/html"));
 app.MapGet("/game", (IWebHostEnvironment env) => Results.File(Path.Combine(env.WebRootPath, "game.html"), "text/html"));
+app.MapGet("/host", (IWebHostEnvironment env) => Results.File(Path.Combine(env.WebRootPath, "host.html"), "text/html"));
 app.MapGet("/avatar/{id:guid}", (Guid id, GameService game) =>
     game.GetAvatar(id) is { } png ? Results.File(png, "image/png") : Results.NotFound());
 

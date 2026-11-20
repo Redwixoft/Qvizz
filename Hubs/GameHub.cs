@@ -29,6 +29,8 @@ public sealed class GameHub(GameService game, IConfiguration config) : Hub
     public Task ResetGame() => RequireAdmin() ? game.NewGameAsync() : Task.CompletedTask;
     public Task NewGame() => RequireAdmin() ? game.NewGameAsync() : Task.CompletedTask;
     public Task KickPlayer(Guid playerId) => RequireAdmin() ? game.KickAsync(playerId) : Task.CompletedTask;
+    public Task Pause() => RequireAdmin() ? game.PauseAsync() : Task.CompletedTask;
+    public Task Resume() => RequireAdmin() ? game.ResumeAsync() : Task.CompletedTask;
 
     private bool RequireAdmin() =>
         Context.Items.TryGetValue(AdminFlag, out var v) && v is true

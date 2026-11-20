@@ -78,6 +78,12 @@ namespace Qvizz.Data.Migrations
                     b.Property<long>("Seq")
                         .HasColumnType("bigint");
 
+                    b.Property<int>("StreakAfter")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StreakBonus")
+                        .HasColumnType("integer");
+
                     b.HasKey("PlayerId", "QuestionIndex");
 
                     b.HasIndex("GameId");
@@ -125,6 +131,9 @@ namespace Qvizz.Data.Migrations
                         .HasColumnType("integer[]");
 
                     b.Property<int>("NextSeat")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PausedRemainingMs")
                         .HasColumnType("integer");
 
                     b.Property<string>("Phase")
@@ -205,6 +214,9 @@ namespace Qvizz.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("Seat")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Streak")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");

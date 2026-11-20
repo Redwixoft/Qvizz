@@ -16,6 +16,7 @@
     if (s.phase !== 'Lobby') drawing = false;
     else if (!s.me.avatarUrl && (renderedKey === null || renderedKey === 'join')) drawing = true; // just joined: draw a face
     render();
+    syncPause(s);
   });
 
   conn.on('reset', () => {
@@ -72,7 +73,7 @@
     }
   }
 
-  const meChip = s => `<div class="me">${face(s.me)}<span class="n">${esc(s.me.nickname)}</span><span class="s">${fmt(s.me.score)}</span><span class="chip">#${s.me.rank}</span></div>`;
+  const meChip = s => `<div class="me">${face(s.me)}<span class="n">${esc(s.me.nickname)}${s.me.streak >= 3 ? ' <span class="fire" title="On a streak">🔥</span>' : ''}</span><span class="s">${fmt(s.me.score)}</span><span class="chip">#${s.me.rank}</span></div>`;
 
   // ---------- join ----------
   function showJoin(message) {
@@ -105,7 +106,6 @@
       <div class="center">
         ${face(s.me, 'pawn')}
         <h2 class="on-board" style="font-size:40px">${esc(s.me.nickname)}</h2>
-        <div class="seat">Seat <span class="num">${s.me.seat}</span> of ${s.playerCount} at the table</div>
         <p class="soft">You're in. Keep an eye on the big screen; the game starts any moment.</p>
         <button class="btn light plastic" id="redraw" type="button">${s.me.avatarUrl ? 'Redraw my face' : 'Draw my face'}</button>
       </div>`;
@@ -211,7 +211,7 @@
       body = `<form class="panel" id="numForm">
           <label for="num">Your guess</label>
           <div class="field"><input id="num" inputmode="decimal" autocomplete="off" enterkeyhint="done">${q.unit ? `<span>${esc(q.unit)}</span>` : ''}</div>
-          <button class="btn plastic" type="submit">Save guess</button>
+          <div class="saved" id="savedNote" hidden>Saved</div>
         </form>`;
     }
     const spacer = q.type === 'ClosestNumber' ? '<div style="flex:1"></div>' : '';
@@ -234,7 +234,7 @@
         if (v === null || Number.isFinite(v)) send('AnswerNumber', v);
         else $('#answerStatus').textContent = 'Numbers only, please.';
       };
-      input.oninput = () => { clearTimeout(debounce); debounce = setTimeout(save, 400); };
+      input.oninput = () => { clearTimeout(debounce); debounce = setTimeout(save, 300); };
       $('#numForm').onsubmit = e => { e.preventDefault(); save(); input.blur(); };
     }
     updateQuestion(s);
@@ -245,6 +245,7 @@
     const q = s.question;
     if (q.type === 'MultipleChoice' || q.type === 'TrueFalse') markChoice(s.myChoice);
     const status = $('#answerStatus');
+    const note = $('#savedNote'); if (note) note.hidden = !s.answered;
     if (!status) return;
     if (!s.answered) {
       status.textContent = q.type === 'Grouping' ? 'Your arrangement saves automatically.'
@@ -277,14 +278,33 @@
       </div>`).join('');
     $('#pairs').querySelectorAll('.m').forEach(b => b.onclick = () => {
       const row = +b.dataset.row;
-      if (grouping.selected === null) grouping.selected = row;
-      else {
-        const o = grouping.order, a = grouping.selected;
-        grouping.selected = null;
-        if (a !== row) { [o[a], o[row]] = [o[row], o[a]]; send('AnswerGrouping', [...o]); }
-      }
+      if (grouping.selected === null) { grouping.selected = row; renderPairs(q); return; }
+      const o = grouping.order, a = grouping.selected;
+      grouping.selected = null;
+      if (a === row) { renderPairs(q); return; }
+      // remember where both answers were, swap, redraw, then slide each one in from its old spot
+      const cells = () => [...$('#pairs').querySelectorAll('.m')];
+      const before = cells().map(c => c.getBoundingClientRect());
+      [o[a], o[row]] = [o[row], o[a]];
+      send('AnswerGrouping', [...o]);
       renderPairs(q);
+      animateSwap(cells(), before, a, row);
     });
+  }
+
+  // The two swapped answers glide past each other into their new rows and flash gold,
+  // so it's obvious which two traded places.
+  function animateSwap(cells, before, a, b) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (const [to, from] of [[a, b], [b, a]]) {
+      const el = cells[to];
+      const dx = before[from].left - before[to].left, dy = before[from].top - before[to].top;
+      el.animate([
+        { transform: `translate(${dx}px, ${dy}px) scale(1.06)`, boxShadow: '0 0 0 4px #ffd36b, 0 10px 18px rgba(0,0,0,.3)', zIndex: 2 },
+        { transform: 'translate(0, 0) scale(1)', boxShadow: '0 0 0 4px #ffd36b, 0 4px 0 rgba(0,0,0,.2)', offset: .75 },
+        { transform: 'none', boxShadow: '0 4px 0 rgba(0,0,0,.2)' }
+      ], { duration: 520, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+    }
   }
 
   // ---------- results ----------
@@ -296,7 +316,8 @@
       : r.points > 0 ? ['part', 'Nice one!']
       : ['bad', 'Not this time'];
     const icon = badge === 'good' || badge === 'part' ? ICON.check(badge === 'part' ? '#14213d' : '#fff') : ICON.cross('#fff');
-    const how = r.bonus > 0 ? `${r.points - r.bonus} for the answer, +${r.bonus} speed bonus` : '';
+    const base = r.points - r.bonus - (r.streakBonus || 0);
+    const how = r.bonus > 0 ? `${base} for the answer, +${r.bonus} speed bonus` : '';
     const detail = r.detail && !['Correct!', 'Not this time.'].includes(r.detail) ? r.detail : '';
     const m = move(s.me);
     app.innerHTML = `
@@ -305,6 +326,7 @@
         <h2>${title}</h2>
         <div class="chip pts ${r.points ? '' : 'zero'}">+${r.points}</div>
         ${how ? `<div class="sub">${how}</div>` : ''}
+        ${r.streakBonus ? `<div class="streak-line">🔥 ${r.streak} in a row: +${r.streakBonus} streak bonus</div>` : ''}
         ${detail ? `<div class="sub">${esc(detail)}</div>` : ''}
         ${s.correctAnswer ? `<div class="sub">Answer: ${answerHtml(s.correctAnswer)}</div>` : ''}
       </div>
@@ -337,6 +359,40 @@
       ${meChip(s)}`;
   }
 
+  // ---------- host pause ----------
+  // The question screen isn't rebuilt on pause (it would wipe a half-typed guess),
+  // so freeze or restart the clock in place and show a notice.
+  let wasPaused = false;
+  function syncPause(s) {
+    const timed = s.phase === 'Question' || s.phase === 'Countdown';
+    const paused = timed && s.paused;
+    $('#pauseNote').classList.toggle('hidden', !paused);
+    const t = $('#timer') || $('#cd');
+    if (paused) {
+      countdown.stop();
+      if (t) { t.textContent = Math.ceil(s.remainingMs / 1000); t.classList.remove('danger'); }
+    } else if (wasPaused && timed && t) {
+      countdown.start(s.remainingMs, secs => t.id === 'timer' ? renderTimer(t, secs) : (t.textContent = secs));
+    }
+    wasPaused = paused;
+  }
+
+  // ---------- personal recap ----------
+  function recap(s) {
+    if (!s.recap?.length) return '';
+    const mark = r => !r.answered ? '' : r.correct ? ICON.check('#23843a') : r.points > 0 ? ICON.check('#8a6400') : ICON.cross('#d93a28');
+    return `<section class="recap" aria-label="Your answers">
+      <h3>Your answers</h3>
+      <ol>${s.recap.map(r => `
+        <li class="${r.correct ? 'ok' : r.points ? 'part' : 'miss'}">
+          <span class="rq"><b class="num">${r.number}</b>${esc(r.question)}</span>
+          <span class="ra"><i>${mark(r)}</i>You: <b>${esc(r.yourAnswer)}</b></span>
+          ${r.correctAnswer && !r.correct ? `<span class="ra right">Answer: <b>${esc(r.correctAnswer)}</b></span>` : ''}
+          <span class="chip ${r.points ? '' : 'zero'}">+${r.points}</span>
+        </li>`).join('')}</ol>
+    </section>`;
+  }
+
   function showFinished(s) {
     const rank = s.me.rank;
     const fills = ['#ffd36b', '#eef1f6', '#e9a56c'];
@@ -350,6 +406,7 @@
         ${face(s.me, 'pawn')}
         <p class="soft">${rank === 1 ? 'Champion of the table. Take a bow!' : podium ? 'On the podium. What a game!' : 'Thanks for playing. Rematch next time?'}</p>
         ${myAwards(s)}
+        ${recap(s)}
       </div>`;
   }
 
@@ -361,11 +418,15 @@
     localStorage.removeItem(ID_KEY);
     showJoin();
   }
-  conn.onreconnected(identify);
-  conn.onclose(() => setTimeout(start, 2000));
+  // A banner while the connection is down, so players wait instead of reloading.
+  const banner = $('#conn');
+  const showBanner = text => { banner.textContent = text; banner.classList.remove('hidden'); };
+  conn.onreconnecting(() => showBanner('Reconnecting… hang on, your answers are safe.'));
+  conn.onreconnected(() => { banner.classList.add('hidden'); identify(); });
+  conn.onclose(() => { showBanner('Connection lost. Trying again…'); setTimeout(start, 2000); });
   async function start() {
-    try { await conn.start(); await identify(); }
-    catch { setTimeout(start, 2000); }
+    try { await conn.start(); banner.classList.add('hidden'); await identify(); }
+    catch { showBanner('Connection lost. Trying again…'); setTimeout(start, 2000); }
   }
   start();
 })();

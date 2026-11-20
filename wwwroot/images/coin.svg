@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1300" viewBox="0 0 900 1300">
+  <!-- sample portrait picture for testing the picture layout -->
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2a4a"/><stop offset="1" stop-color="#0c1428"/></linearGradient></defs>
+  <rect width="900" height="1300" fill="url(#g)"/>
+  <g fill="#ffffff" opacity=".5"><circle cx="120" cy="140" r="4"/><circle cx="760" cy="220" r="3"/><circle cx="640" cy="90" r="5"/><circle cx="200" cy="1100" r="4"/><circle cx="780" cy="1180" r="3"/></g>
+  <g transform="translate(450 620)">
+    <circle r="330" fill="#c98a12"/><circle r="300" fill="#f2b705"/><circle r="250" fill="none" stroke="#c98a12" stroke-width="14"/>
+    <path d="M-60-150h100c70 0 110 30 110 85 0 35-20 60-55 70 45 10 70 40 70 80 0 65-45 95-125 95h-100zm55 60v80h40c35 0 50-15 50-40s-15-40-50-40zm0 125v90h50c40 0 60-15 60-45s-20-45-60-45z" fill="#c98a12"/>
+    <path d="M-20-195v50M40-195v50M-20 145v50M40 145v50" stroke="#c98a12" stroke-width="24" stroke-linecap="round"/>
+  </g>
+  <text x="60" y="1240" font-family="Arial" font-size="38" fill="#c9d6ff" opacity=".7">Sample picture</text>
+</svg>

@@ -119,7 +119,7 @@ components:
     textColor: "{colors.ink}"
     rounded: "{rounded.card}"
     padding: "36px 250px 30px 52px"
-  ticker-position:
+  score-chip-row:
     backgroundColor: "{colors.card}"
     textColor: "{colors.ink}"
     rounded: "{rounded.position}"
@@ -142,7 +142,7 @@ components:
 
 **Creative North Star: "Game Night on the Trading Floor"**
 
-The big screen is a family board-game table laid on a cobalt board: white card stock carries the words, glossy plastic pieces carry the answers, drawn faces are scattered round the table like pieces, and the scores run along the top like a market ticker. The trading-floor half of the world is a light nod, never a costume: answers are "positions" with volume bars, standings show rank movement arrows and a "trade of the round", numbers are set in a monospace tape face. Nothing reads as a crypto product.
+The big screen is a family board-game table laid on a cobalt board: white card stock carries the words, glossy plastic pieces carry the answers, drawn faces are scattered round the table like pieces, and the standings read like a positions table. The trading-floor half of the world is a light nod, never a costume: answers are "positions" with volume bars, standings show rank movement arrows and a "trade of the round", numbers are set in a monospace tape face. Nothing reads as a crypto product.
 
 Density is low and sized for the back of the room. The presenter view is a fixed 1440 by 900 stage scaled to fit any laptop, TV or projector, so every measurement on it is designed once at full size. The phone is a controller: big stacked pieces, one card of text, almost nothing else. Fun is carried by moments (dealt-card countdown, reveal, podium rise), not by decoration.
 
@@ -176,7 +176,7 @@ A deep cobalt table with paper-white cards and four primary-toy plastic colours,
 
 ### Neutral
 - **Card Stock** (#ffffff): question card, join card, standings sheet, phone panels and result card, letter tokens, the winning-row ring.
-- **Printed Track** (#f4f1ea): the ticker strip, lobby seats, name tags, input wells, "trade of the round", the phone "me" bar.
+- **Printed Track** (#f4f1ea): lobby seats, name tags, input wells, "trade of the round", the phone "me" bar.
 - **Track Rule** (#dcd5c4): hairlines and input borders on track surfaces, the standings header rule.
 - **Ink Navy** (#14213d): all text on light surfaces; the timer token; matching numbers.
 - **Soft Ink** (#4a5578): secondary text on light surfaces: meta lines, column heads, units.
@@ -206,7 +206,7 @@ Ten pawn colours assigned by join order and cycled: #d93a28, #23843a, #0f78b5, #
 - **Title** (600, 40px, 1.1): answer text in rows; player names in standings and podium at 800.
 - **Body** (600, 22 to 28px): meta lines, join steps, sub-captions. Phone body 17 to 21px.
 - **Label** (600, 20 to 22px, Soft Ink): column heads, units, secondary captions.
-- **Numeral** (JetBrains Mono 800, tabular): 18px ticker ranks up to 300px on the countdown card; totals and ranks at 48px.
+- **Numeral** (JetBrains Mono 800, tabular): 18px small ranks up to 300px on the countdown card; totals and ranks at 48px.
 
 ### Named Rules
 **The Numbers Are Tape Rule.** Every digit that counts something (score, rank, timer, vote count, player count, answer value) is set in the monospace at 800 with tabular figures. Words never are.
@@ -215,9 +215,9 @@ Ten pawn colours assigned by join order and cycled: #d93a28, #23843a, #0f78b5, #
 
 ## Layout
 
-The presenter view is a fixed 1440 by 900 stage, centred and scaled as a whole to fit the window, so layout is authored in absolute pixels once. The stage keeps a 72px side margin (22px top, 44px bottom) and a 24px gap between bands. Question screens stack two bands, with no ticker so players can focus: the white question card with the timer token at its right, then the answer area filling the rest (reveal screens add the ticker strip on top, bled 48px wider than the margin): four full-width rows with 16px gaps, two tall side-by-side pieces for True/False, a 1 : 1.6 two-column grid for matching, a deep-board chart for closest number.
+The presenter view is a fixed 1440 by 900 stage, centred and scaled as a whole to fit the window, so layout is authored in absolute pixels once. The stage keeps a 72px side margin (22px top, 44px bottom) and a 24px gap between bands. Question and reveal screens show no scores so players can focus, and centre two bands vertically: the white question card with the timer token at its right (the Next button on the reveal), then the answer area: four full-width rows with 16px gaps, two tall side-by-side pieces for True/False, a 1 : 1.6 two-column grid for matching, a deep-board chart for closest number.
 
-Feature screens (lobby, standings, podium) position blocks absolutely on the stage. The lobby centres a 500px column (x 470–970): small wordmark, a white join card with a 360px QR code and the full join address (wrapping onto two lines when long, never cut), the gold player count and the Start button. Players are scattered around it as tilted pieces on both sides, nearest the card first, each with a small stable tilt and nudge: 92px faces up to 18 players, 64px faces up to 40, compact name tags with a colour dot above 40. Standings is a 930px white sheet with a six-column grid (rank, move, face, name, gain, total) and a side column for the trade card and the played-card pile.
+Feature screens (lobby, standings, podium) position blocks absolutely on the stage. The lobby centres a 500px column (x 470–970): small wordmark, the quiz name (from `name` in quiz.json) in large white type, a white join card with a 330px QR code and the full join address (wrapping onto two lines when long, never cut), the gold player count and the Start button. Players are scattered around it as tilted pieces on both sides, nearest the card first, each with a small stable tilt and nudge: 92px faces up to 18 players, 64px faces up to 40, compact name tags with a colour dot above 40. Standings is a 950px white sheet with a seven-column grid (rank, move, face, name, answer points as a gold chip, speed bonus as a gold-outlined chip, total) and a side column for the trade card and the played-card pile.
 
 The phone is a single column, max 520px, 14px padding and 12px gaps, filling the dynamic viewport height: question card on top, answer pieces stretching to fill, the "me" bar at the bottom.
 
@@ -238,7 +238,7 @@ Depth is physical and comes in two kinds. Plastic pieces (answer rows, buttons, 
 
 ## Shapes
 
-Generously rounded, toy-like corners scaled to object size: 8px chips, 10px ticker positions, 14px fields and seats, 16px buttons, 18px answer pieces, 22px phone panels, 26px big cards, 28px tray, fully round tokens, faces and name tags. Plastic pieces carry asymmetric padding (more at the bottom) so the label sits above the moulded edge. Faces are circles with a solid ring in the player colour (dashed while the player is still drawing). Podium blocks round the top corners (22px) and barely round the base (8px).
+Generously rounded, toy-like corners scaled to object size: 8px chips, 14px fields and seats, 16px buttons, 18px answer pieces, 22px phone panels, 26px big cards, 28px tray, fully round tokens, faces and name tags. Plastic pieces carry asymmetric padding (more at the bottom) so the label sits above the moulded edge. Faces are circles with a solid ring in the player colour (dashed while the player is still drawing). Podium blocks round the top corners (22px) and barely round the base (8px).
 
 ## Components
 
@@ -273,11 +273,11 @@ Full-width plastic rows in the fixed answer colour with a white round letter tok
 ### Timer Token
 A 136px Ink disc with monospace seconds at the right of the question card. In the last 5 seconds it turns red, scales up and pulses, so urgency is carried by size and motion as well as colour.
 
-### Ticker
-A Printed Track strip with every player as a white position (rank, face, name, total, gain chip). It crawls linearly and loops when it overflows. It appears on reveal screens only: while a question is running the screen shows no scores, so players can focus on the question.
-
 ### Player Faces and Lobby Tray
 Faces are drawn on the phone in a white square with a dark face outline to draw into; the result is a white face on white, ringed in the player's colour. Until drawn, a seat shows the initial in a dashed ring. New arrivals seat with a 0.5s scale-in and a gold ring; offline players fade to 35%.
+
+### Question Picture (presenter only)
+A question with an `image` shows it as a photo pinned to the table: a white frame (14px mat, 26px radius, card shadow) tilted about 1°, with the picture shown whole (`object-fit: contain`) over a blurred, darkened copy of itself so no bars show. The shape decides the arrangement. A portrait or square picture takes the left 47% of the stage at full height, with the question card and answers stacked on the right. A landscape picture (wider than 1.2:1) is stacked: the question as a slim full-width bar on top (text at most 40px, timer and question number side by side on the right), the picture centred in the middle at 16:10 taking the remaining height, and the answers full width at the bottom (multiple choice as a 2×2 grid). Number questions always use the side-by-side layout, because their answer chart needs the height. Question text steps down to 46/40/34px next to a picture. Phones never show the picture.
 
 ### Podium
 Three plastic blocks (gold, silver #c9ced8, bronze #d08a4e) rising in order 3, 2, 1 with SVG medals on cobalt ribbons and the winner's face larger.
