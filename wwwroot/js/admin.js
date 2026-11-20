@@ -92,7 +92,25 @@
     }
   }
 
-  // ----- lobby: faces up to 30 players, name tags above -----
+  // ----- lobby: a big QR code in the middle, players scattered around it like pieces on a table -----
+  // Seats are fixed spots left and right of the centre card, filled nearest-first, each with a small
+  // tilt and nudge (stable per player, so nobody jumps around when others join).
+  // Up to 40 players show their drawn faces; above that everyone becomes a compact name tag.
+  const CARD = { left: 470, right: 970 };          // the centre column, kept clear
+  const AREA = { top: 36, bottom: 864, edge: 34 };
+  function seatSpots(tileW, tileH) {
+    const spots = [];
+    for (const [x0, x1] of [[AREA.edge, CARD.left - 16], [CARD.right + 16, 1440 - AREA.edge]]) {
+      const cols = Math.floor((x1 - x0) / tileW), rows = Math.floor((AREA.bottom - AREA.top) / tileH);
+      const cw = (x1 - x0) / cols, rh = (AREA.bottom - AREA.top) / rows;
+      for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++)
+        spots.push({ x: x0 + cw * (c + .5), y: AREA.top + rh * (r + .5) });
+    }
+    // nearest to the card first, so a small group gathers around the QR code
+    return spots.sort((a, b) => Math.hypot(a.x - 720, (a.y - 450) * 1.6) - Math.hypot(b.x - 720, (b.y - 450) * 1.6));
+  }
+  const wobble = seat => { const h = Math.sin(seat * 12.9898) * 43758.5453; return h - Math.floor(h); };
+
   function lobby(s) {
     const n = s.players.length;
     const newest = n > 1 ? Math.max(...s.players.map(p => p.seat)) : -1;
@@ -100,30 +118,39 @@
     const cls = p => [p.avatarUrl ? '' : 'drawing', p.connected ? '' : 'offline', p.seat === newest ? 'new' : '', seen.has(p.id) ? '' : 'fresh'].join(' ');
     // a small remove button for the host, shown on hover / keyboard focus
     const kick = p => `<button type="button" class="kick" data-kick="${p.id}" data-name="${esc(p.nickname)}" aria-label="Remove ${esc(p.nickname)}">${ICON.cross('#14213d')}</button>`;
-    let tray;
-    if (n > 30) {
-      const size = n <= 45 ? 30 : n <= 60 ? 24 : 19;
-      tray = `<div class="tray names" style="--name:${size}px">${bySeat.map(p =>
-        `<div class="tag ${cls(p)}" style="--pc:${colourOf(p)}"><i></i><span>${esc(p.nickname)}</span>${kick(p)}</div>`).join('')}</div>`;
-    } else {
-      const [cols, faceSize, name, gap] = n <= 12 ? [4, 104, 26, 16] : n <= 20 ? [5, 88, 22, 14] : [6, 70, 19, 12];
-      const slots = bySeat.map(p => `<div class="slot ${cls(p)}">${face(p)}<b>${esc(p.nickname)}</b>${p.avatarUrl ? '' : '<small>drawing…</small>'}${kick(p)}</div>`);
-      for (let i = n; i < cols * 3; i++) slots.push('<div class="slot empty">free seat</div>');
-      tray = `<div class="tray" style="--cols:${cols};--face:${faceSize}px;--name:${name}px;--gap:${gap}px">${slots.join('')}</div>`;
-    }
+
+    const tier = n <= 18 ? { w: 150, h: 152, face: 92, name: 22, tags: false }
+      : n <= 40 ? { w: 112, h: 116, face: 64, name: 17, tags: false }
+      : n <= 68 ? { w: 196, h: 48, name: 20, tags: true }
+      : { w: 140, h: 40, name: 16, tags: true };
+    const spots = seatSpots(tier.w, tier.h);
+    const pieces = bySeat.map((p, i) => {
+      const spot = spots[i % spots.length], j = wobble(p.seat);
+      const style = `left:${spot.x + (j - .5) * tier.w * .18}px;top:${spot.y + (wobble(p.seat + 99) - .5) * tier.h * .18}px;` +
+        `--tilt:${(j - .5) * (tier.tags ? 6 : 10)}deg;--pc:${colourOf(p)};--face:${tier.face}px;--name:${tier.name}px;width:${tier.w - 14}px`;
+      return tier.tags
+        ? `<div class="piece tag ${cls(p)}" style="${style}"><i></i><span>${esc(p.nickname)}</span>${kick(p)}</div>`
+        : `<div class="piece slot ${cls(p)}" style="${style};height:${tier.h - 14}px">${face(p)}<b>${esc(p.nickname)}</b>${p.avatarUrl ? '' : '<small>drawing…</small>'}${kick(p)}</div>`;
+    }).join('');
     s.players.forEach(p => seen.add(p.id));
+
     const joinUrl = s.joinUrl || `${location.origin}/game`;
+    const shown = joinUrl.replace(/^https?:\/\//, '');
     return `<div class="lobby">
-      <div class="mark">Qvizz<i>.</i></div>
-      <div class="join">
-        <h2>Scan to join</h2>
-        <div class="qr-row"><div class="qr">${qrSvg(joinUrl)}</div>
-          <ol><li>Scan with your phone camera</li><li>Pick a nickname</li><li>Draw your face</li></ol></div>
-        <div class="url">${esc(joinUrl.replace(/^https?:\/\//, ''))}</div>
+      <div class="join-center">
+        <div class="mark">Qvizz<i>.</i></div>
+        <div class="join">
+          <h2>Scan to join</h2>
+          <div class="qr">${qrSvg(joinUrl)}</div>
+          <div class="url ${shown.length > 30 ? 'long' : ''}">${esc(shown).replace(/([./])/g, '$1<wbr>')}</div>
+          <p class="steps">Pick a nickname, draw your face, watch this screen.</p>
+        </div>
+        <div class="row-actions">
+          <div class="count"><b>${n}</b>player${n === 1 ? '' : 's'} at the table</div>
+          <button class="btn start plastic" data-act="StartQuiz" ${n ? '' : 'disabled'}>Start the game</button>
+        </div>
       </div>
-      <div class="count"><b>${n}</b>player${n === 1 ? '' : 's'} at the table</div>
-      <button class="btn start plastic" data-act="StartQuiz" ${n ? '' : 'disabled'}>Start the game</button>
-      ${tray}
+      ${pieces}
     </div>`;
   }
 

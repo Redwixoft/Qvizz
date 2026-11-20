@@ -177,7 +177,7 @@ input { font: inherit; }
 .slot.offline, .tag.offline { opacity: .35; }
 .slot.new, .tag.new { box-shadow: 0 0 0 4px var(--gold); }
 .slot.fresh, .tag.fresh { animation: seat .5s var(--ease-out); }
-@keyframes seat { from { transform: scale(.85); opacity: 0; } }
+@keyframes seat { from { scale: .8; opacity: 0; } }
 .tray.names { display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 12px; padding: 28px; }
 .tag { display: flex; align-items: center; gap: 10px; background: var(--track); border-radius: 999px; padding: 8px 18px 8px 10px; font-size: var(--name); font-weight: 800; max-width: 100%; }
 .tag i { flex: none; width: calc(var(--name) * .9); height: calc(var(--name) * .9); border-radius: 50%; background: var(--pc); }
@@ -381,3 +381,21 @@ input { font: inherit; }
 .stage.centered .book { flex: none; }
 .rest .pos { font-size: 18px; padding: 4px 12px 4px 4px; gap: 8px; }
 .rest .pos .face { width: 32px; height: 32px; }
+
+/* ---------- lobby: big QR in the centre, players scattered around ---------- */
+.join-center { position: absolute; left: 470px; width: 500px; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.join-center .mark { position: static; font-size: 56px; }
+.join-center .join { position: static; width: 100%; padding: 24px 28px 22px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.join-center .join h2 { font-size: 34px; }
+.join-center .join .qr { width: 360px; height: 360px; padding: 8px; }
+.join-center .join .url { width: 100%; margin: 0; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; font-size: 25px; line-height: 1.25; text-align: center; }
+.join-center .join .url.long { font-size: 21px; }
+.join-center .steps { font-size: 19px; font-weight: 600; color: var(--ink-soft); }
+.join-center .row-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.join-center .count, .join-center .start { white-space: nowrap; }
+.join-center .count { position: static; font-size: 24px; }
+.join-center .count b { font-size: 44px; }
+.join-center .start { position: static; font-size: 28px; padding: 18px 36px 26px; }
+.piece { position: absolute; transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)); box-shadow: 0 6px 12px rgba(0,0,0,.28); }
+.piece.slot { padding: 8px 6px; gap: 4px; }
+.piece.tag { justify-content: flex-start; }
