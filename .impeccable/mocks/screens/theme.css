@@ -1,0 +1,81 @@
+/* Game Night × Trading Floor — shared tokens for the design screens */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,800&family=JetBrains+Mono:wght@600;800&display=swap');
+
+:root {
+  --board: #1d3e93;        /* cobalt game board */
+  --board-deep: #142d6e;
+  --track: #f4f1ea;        /* printed board track */
+  --track-line: #dcd5c4;
+  --card: #ffffff;         /* card stock */
+  --ink: #14213d;
+  --ink-soft: #4a5578;
+  --red: #d93a28;          /* answer A */
+  --green: #23843a;        /* answer B */
+  --blue: #0f78b5;        /* answer C, lighter than the board so it separates */
+  --yellow: #f2b705;       /* answer D */
+  --gold: #ffd36b;         /* chips / points gained */
+  --up: #23843a;
+  --down: #d93a28;
+  --display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --num: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; }
+::selection { background: var(--gold); color: var(--ink); }
+
+/* plastic game piece look: colour body, darker bottom edge, soft drop */
+.plastic { box-shadow: inset 0 -10px 0 rgba(0,0,0,.18), 0 8px 14px rgba(0,0,0,.3); }
+
+.face { display: block; border-radius: 50%; background: #fff; }
+
+.tok { display: grid; place-items: center; border-radius: 50%; background: #fff; font-family: var(--display); font-weight: 800; }
+
+.opt-a { background: var(--red); color: #fff; }
+.opt-b { background: var(--green); color: #fff; }
+.opt-c { background: var(--blue); color: #fff; }
+.opt-d { background: var(--yellow); color: var(--ink); }
+.opt-a .tok { color: var(--red); } .opt-b .tok { color: var(--green); }
+.opt-c .tok { color: var(--blue); } .opt-d .tok { color: var(--ink); }
+
+/* ---------- shared screen bases ---------- */
+body.big { width: 1440px; height: 900px; background: var(--board); font-family: var(--display); color: var(--ink); position: relative; overflow: hidden; }
+body.phone { width: 390px; height: 844px; background: var(--board); font-family: var(--display); color: var(--ink); position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 14px 14px 16px; gap: 12px; }
+
+/* question card (big screen) */
+.qcard { position: absolute; left: 72px; right: 72px; top: 124px; min-height: 228px; background: var(--card); border-radius: 26px; padding: 40px 260px 64px 52px; box-shadow: 0 18px 34px rgba(0,0,0,.32); }
+.qcard h1 { font-size: 62px; line-height: 1.06; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
+.qcard .clock { position: absolute; right: 44px; top: 32px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.qcard .clock .tok { width: 136px; height: 136px; background: var(--ink); color: #fff; font-size: 72px; box-shadow: inset 0 -10px 0 rgba(0,0,0,.35); }
+.qcard .clock span { font-family: var(--num); font-weight: 800; font-size: 22px; color: var(--ink-soft); }
+.qcard .locked { position: absolute; left: 52px; bottom: 24px; font-size: 22px; font-weight: 600; color: var(--ink-soft); }
+.qcard .locked b { font-family: var(--num); color: var(--ink); }
+.big > .ticker { position: absolute; left: 24px; right: 24px; top: 22px; }
+.big > .ticker .pos .face { width: 40px; height: 40px; }
+
+/* answer rows (big screen) */
+.book { position: absolute; left: 72px; right: 72px; top: 386px; display: flex; flex-direction: column; gap: 16px; }
+.row { min-height: 104px; border-radius: 18px; display: flex; align-items: center; gap: 26px; padding: 12px 34px 18px 18px; }
+.row .tok { width: 74px; height: 74px; font-size: 44px; flex: none; }
+.row .txt { font-size: 40px; font-weight: 600; line-height: 1.1; flex: 1; }
+
+/* phone question header */
+.pq { position: relative; background: var(--card); border-radius: 18px; padding: 14px 76px 14px 16px; min-height: 86px; box-shadow: 0 8px 14px rgba(0,0,0,.28); }
+.pq p { font-size: 17px; font-weight: 600; line-height: 1.3; }
+.pq .tok { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 54px; height: 54px; background: var(--ink); color: #fff; font-size: 28px; box-shadow: inset 0 -5px 0 rgba(0,0,0,.35); }
+.pstatus { color: #fff; text-align: center; font-size: 16px; font-weight: 600; }
+.me { display: flex; align-items: center; gap: 10px; background: var(--track); border-radius: 14px; padding: 8px 14px 8px 8px; }
+.me .face { width: 44px; height: 44px; border: 4px solid var(--red); }
+.me .n { font-size: 19px; font-weight: 800; flex: 1; }
+.me .s { font-family: var(--num); font-weight: 800; font-size: 18px; }
+.me .r { font-family: var(--num); font-weight: 800; font-size: 16px; background: var(--gold); border-radius: 6px; padding: 3px 8px; }
+
+/* buttons */
+.btn { border: 0; border-radius: 16px; font-family: var(--display); font-weight: 800; color: var(--ink); background: var(--yellow); padding: 16px 26px 22px; font-size: 22px; cursor: pointer; }
+.btn.light { background: #fff; }
+.btn:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
+
+/* ticker band printed on the board edge */
+.ticker { display: flex; align-items: center; gap: 12px; background: var(--track); border-radius: 14px; padding: 10px 12px; overflow: hidden; white-space: nowrap; }
+.pos { display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid var(--track-line); border-radius: 10px; padding: 6px 14px 6px 6px; font-family: var(--num); font-weight: 800; font-size: 22px; color: var(--ink); }
+.pos .name { font-family: var(--display); font-size: 22px; }
+.pos .gain { background: var(--gold); border-radius: 6px; padding: 2px 8px; font-size: 18px; }

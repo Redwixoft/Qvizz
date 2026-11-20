@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Qvizz – Presenter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,800&family=JetBrains+Mono:wght@600;800&display=swap">
+  <link rel="stylesheet" href="/css/app.css?v=14">
+</head>
+<body class="admin-body">
+  <form id="login" class="login">
+    <h1>Presenter login</h1>
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" aria-label="Presenter password" autofocus>
+    <button class="btn plastic" type="submit">Open the table</button>
+    <div id="loginError" class="error" role="alert"></div>
+  </form>
+
+  <div id="app" class="hidden">
+    <div class="corner">
+      <span id="saveNote" class="save-note hidden">Not saved: no database configured</span>
+      <button id="playersBtn" type="button">Players</button>
+      <button id="fullBtn" type="button">Full screen</button>
+      <button id="resetBtn" type="button">New game</button>
+    </div>
+    <aside id="playersPanel" class="players-panel hidden" aria-label="Players"></aside>
+    <div class="fit"><main id="stage" class="stage" aria-live="polite"></main></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script src="/js/common.js?v=14"></script>
+  <script src="/js/admin.js?v=14"></script>
+</body>
+</html>

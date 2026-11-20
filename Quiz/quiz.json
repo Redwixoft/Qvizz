@@ -1,0 +1,50 @@
+// Static quiz definition. Edit freely; restart the app to reload.
+// Types: MultipleChoice, TrueFalse, Grouping, ClosestNumber
+// Images are paths under wwwroot, e.g. "/images/my-photo.jpg".
+{
+  "title": "Qvizz test quiz",
+  "questions": [
+    {
+      "type": "MultipleChoice",
+      "text": "In 2010, what did someone famously buy for 10,000 bitcoin?",
+      "options": [
+        "Two large pizzas from a Florida pizza place",
+        "A used car from a dealer in Texas",
+        "A one-way flight from London to Tokyo",
+        "The very first domain name ever sold"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "type": "TrueFalse",
+      "text": "Bitcoin's creator, Satoshi Nakamoto, has never been publicly identified.",
+      "correctBool": true
+    },
+    {
+      "type": "Grouping",
+      "text": "Match each crypto word with what it means",
+      "pairs": [
+        { "left": { "text": "HODL" },    "right": { "text": "Holding on instead of selling" } },
+        { "left": { "text": "Whale" },   "right": { "text": "Someone holding a huge amount of coins" } },
+        { "left": { "text": "Gas fee" }, "right": { "text": "The cost of making a transaction" } },
+        { "left": { "text": "Satoshi" }, "right": { "text": "The smallest unit of a bitcoin" } }
+      ]
+    },
+    {
+      "type": "ClosestNumber",
+      "text": "How many bitcoins will ever exist, in millions?",
+      "correctNumber": 21,
+      "unit": "million"
+    },
+    {
+      "type": "Grouping",
+      "text": "Match each shape with its name",
+      "pairs": [
+        { "left": { "image": "/images/circle.svg" },   "right": { "text": "Circle" } },
+        { "left": { "image": "/images/square.svg" },   "right": { "text": "Square" } },
+        { "left": { "image": "/images/triangle.svg" }, "right": { "text": "Triangle" } },
+        { "left": { "image": "/images/star.svg" },     "right": { "text": "Star" } }
+      ]
+    }
+  ]
+}

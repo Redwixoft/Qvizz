@@ -1,0 +1,512 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T15:30:53.643Z",
+  "title": "Design System: Qvizz",
+  "extensions": {
+    "colorMeta": {
+      "board": {
+        "role": "primary",
+        "displayName": "Cobalt Board",
+        "canonical": "oklch(39.5% 0.146 264)",
+        "tonalRamp": [
+          "#000035",
+          "#061c5f",
+          "#1a3a8c",
+          "#3c5daa",
+          "#6181c4",
+          "#89a5dd",
+          "#b3c9f7",
+          "#deefff"
+        ]
+      },
+      "board-deep": {
+        "role": "primary",
+        "displayName": "Deep Board",
+        "canonical": "oklch(32.2% 0.117 264)",
+        "tonalRamp": [
+          "#000231",
+          "#091e59",
+          "#243e7b",
+          "#475f96",
+          "#6b82b1",
+          "#92a5cc",
+          "#bbc9e7",
+          "#e1efff"
+        ]
+      },
+      "board-line": {
+        "role": "primary",
+        "displayName": "Board Groove",
+        "canonical": "oklch(49.2% 0.141 265)",
+        "tonalRamp": [
+          "#01042d",
+          "#0d1f56",
+          "#223c82",
+          "#3a5bb0",
+          "#5f7fcb",
+          "#86a4e6",
+          "#b0c9ff",
+          "#daefff"
+        ]
+      },
+      "piece-red": {
+        "role": "secondary",
+        "displayName": "Piece Red (A, False)",
+        "canonical": "oklch(58.7% 0.198 30)",
+        "tonalRamp": [
+          "#270000",
+          "#510000",
+          "#7f0a01",
+          "#af2517",
+          "#de4432",
+          "#fc7763",
+          "#ffa592",
+          "#ffd2c2"
+        ]
+      },
+      "piece-green": {
+        "role": "secondary",
+        "displayName": "Piece Green (B)",
+        "canonical": "oklch(54.1% 0.141 147)",
+        "tonalRamp": [
+          "#001200",
+          "#003003",
+          "#005119",
+          "#187430",
+          "#449752",
+          "#74b87c",
+          "#a1daa7",
+          "#cffcd3"
+        ]
+      },
+      "piece-blue": {
+        "role": "secondary",
+        "displayName": "Piece Blue (C, True)",
+        "canonical": "oklch(55.0% 0.127 242)",
+        "tonalRamp": [
+          "#000c24",
+          "#00274a",
+          "#004673",
+          "#00679e",
+          "#3689c3",
+          "#69addf",
+          "#99d0fc",
+          "#c9f5ff"
+        ]
+      },
+      "piece-yellow": {
+        "role": "secondary",
+        "displayName": "Piece Yellow (D, primary button)",
+        "canonical": "oklch(81.1% 0.166 84)",
+        "tonalRamp": [
+          "#160800",
+          "#322200",
+          "#553e00",
+          "#7c5b00",
+          "#a47b00",
+          "#cf9c01",
+          "#f9bf2d",
+          "#ffe77a"
+        ]
+      },
+      "gold": {
+        "role": "tertiary",
+        "displayName": "Points Gold",
+        "canonical": "oklch(88.5% 0.132 86)",
+        "tonalRamp": [
+          "#130900",
+          "#2f2307",
+          "#4e4020",
+          "#735e30",
+          "#997f40",
+          "#c2a051",
+          "#ecc463",
+          "#ffe98c"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card Stock",
+        "canonical": "oklch(100.0% 0.000 89)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "track": {
+        "role": "neutral",
+        "displayName": "Printed Track",
+        "canonical": "oklch(95.9% 0.010 87)",
+        "tonalRamp": [
+          "#0c0b0a",
+          "#262523",
+          "#434240",
+          "#62615e",
+          "#84827e",
+          "#a7a5a0",
+          "#cbc9c3",
+          "#f1eee7"
+        ]
+      },
+      "track-line": {
+        "role": "neutral",
+        "displayName": "Track Rule",
+        "canonical": "oklch(87.4% 0.024 88)",
+        "tonalRamp": [
+          "#0d0b07",
+          "#272520",
+          "#44423c",
+          "#646159",
+          "#868277",
+          "#aaa597",
+          "#cfc9b9",
+          "#f5eede"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink Navy",
+        "canonical": "oklch(25.2% 0.056 264)",
+        "tonalRamp": [
+          "#030920",
+          "#172440",
+          "#35425c",
+          "#566179",
+          "#798396",
+          "#9da5b5",
+          "#c3c9d6",
+          "#e8effc"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "oklch(45.5% 0.059 270)",
+        "tonalRamp": [
+          "#060a1b",
+          "#1d243b",
+          "#37405f",
+          "#556082",
+          "#7781a0",
+          "#9ba4bf",
+          "#c1c9df",
+          "#e8eeff"
+        ]
+      },
+      "on-board-soft": {
+        "role": "neutral",
+        "displayName": "Board Mist",
+        "canonical": "oklch(88.0% 0.059 271)",
+        "tonalRamp": [
+          "#080b14",
+          "#21252f",
+          "#3d424f",
+          "#5b6174",
+          "#79819b",
+          "#9aa4c4",
+          "#bcc8ee",
+          "#e1edff"
+        ]
+      },
+      "up": {
+        "role": "semantic",
+        "displayName": "Rank Up",
+        "canonical": "oklch(54.1% 0.141 147)",
+        "tonalRamp": [
+          "#001200",
+          "#003003",
+          "#005119",
+          "#187430",
+          "#449752",
+          "#74b87c",
+          "#a1daa7",
+          "#cffcd3"
+        ]
+      },
+      "down": {
+        "role": "semantic",
+        "displayName": "Rank Down",
+        "canonical": "oklch(58.7% 0.198 30)",
+        "tonalRamp": [
+          "#270000",
+          "#510000",
+          "#7f0a01",
+          "#af2517",
+          "#de4432",
+          "#fc7763",
+          "#ffa592",
+          "#ffd2c2"
+        ]
+      }
+    },
+    "playerColours": [
+      "#d93a28",
+      "#23843a",
+      "#0f78b5",
+      "#f2b705",
+      "#864cbf",
+      "#0aa3a3",
+      "#e86fa6",
+      "#7a4a1d",
+      "#3a3a3a",
+      "#ff8c1a"
+    ],
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Wordmark, countdown and podium titles (84-120px on the stage)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Question text (60px default, sized per question), standings and chart titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Answer text in pieces; player names at 800."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Meta lines, join steps, captions; 17-21px on phone."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Column heads, units, secondary captions in Soft Ink."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Every counted number: scores, ranks, timer, counts. Tabular, 800."
+      }
+    },
+    "shadows": [
+      {
+        "name": "plastic-piece",
+        "value": "inset 0 -10px 0 rgba(0,0,0,.18), 0 8px 14px rgba(0,0,0,.3)",
+        "purpose": "Answer rows and buttons: moulded bottom edge plus short drop."
+      },
+      {
+        "name": "token-edge",
+        "value": "inset 0 -10px 0 rgba(0,0,0,.35)",
+        "purpose": "Timer token edge (5px on phone)."
+      },
+      {
+        "name": "podium-block",
+        "value": "inset 0 -14px 0 rgba(0,0,0,.18), 0 10px 18px rgba(0,0,0,.3)",
+        "purpose": "Podium blocks."
+      },
+      {
+        "name": "card-lift",
+        "value": "0 18px 34px rgba(0,0,0,.32)",
+        "purpose": "Big-screen paper cards."
+      },
+      {
+        "name": "panel-lift",
+        "value": "0 10px 18px rgba(0,0,0,.3)",
+        "purpose": "Phone panels, result card, drawing pad, pile cards."
+      },
+      {
+        "name": "item-lift",
+        "value": "0 8px 14px rgba(0,0,0,.28)",
+        "purpose": "Matching items, phone question card."
+      },
+      {
+        "name": "movable-cell",
+        "value": "0 4px 0 rgba(0,0,0,.2)",
+        "purpose": "Matching cells a player can pick."
+      }
+    ],
+    "focus": {
+      "value": "outline: 4px solid #ffd36b; outline-offset: 3px",
+      "purpose": "Keyboard focus on buttons and inputs."
+    },
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "All reveals, seat-in, rise, timer growth."
+      },
+      {
+        "name": "press",
+        "value": "transform .12s, translateY(3px)",
+        "purpose": "Pieces sink when pressed."
+      },
+      {
+        "name": "reveal-dim",
+        "value": "filter .5s ease-out",
+        "purpose": "Losing rows desaturate."
+      },
+      {
+        "name": "volume-bar",
+        "value": "width 1.2s ease-out .2s",
+        "purpose": "Vote-share bars grow."
+      },
+      {
+        "name": "timer-pulse",
+        "value": "1s ease-in-out infinite, scale 1.18 to 1.26",
+        "purpose": "Last 5 seconds."
+      },
+      {
+        "name": "ticker-crawl",
+        "value": "linear infinite, 40s default",
+        "purpose": "Ticker loops when it overflows."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all animation and transition off",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stage",
+        "value": "1440x900 fixed, scaled to fit"
+      },
+      {
+        "name": "phone-max",
+        "value": "520px"
+      }
+    ],
+    "openItems": [
+      "Fonts load from Google Fonts by the owner's decision (not self-hosted); internet access is required for the brand faces."
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Yellow plastic button for presenter flow and phone actions.",
+      "html": "<button class=\"ds-btn\">Start the game</button>",
+      "css": "@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@800&display=swap'); .ds-btn { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; color: #14213d; background: #f2b705; border: 0; border-radius: 16px; padding: 16px 28px 22px; box-shadow: inset 0 -10px 0 rgba(0,0,0,.18), 0 8px 14px rgba(0,0,0,.3); cursor: pointer; transition: transform .12s; } .ds-btn:hover { filter: brightness(1.04); } .ds-btn:active { transform: translateY(3px); } .ds-btn:focus-visible { outline: 4px solid #ffd36b; outline-offset: 3px; } .ds-btn:disabled { opacity: .55; cursor: default; }"
+    },
+    {
+      "name": "Light Button",
+      "kind": "button",
+      "refersTo": "button-light",
+      "description": "White plastic button variant.",
+      "html": "<button class=\"ds-btn-light\">Draw again</button>",
+      "css": ".ds-btn-light { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; color: #14213d; background: #fff; border: 0; border-radius: 16px; padding: 16px 28px 22px; box-shadow: inset 0 -10px 0 rgba(0,0,0,.18), 0 8px 14px rgba(0,0,0,.3); cursor: pointer; transition: transform .12s; } .ds-btn-light:active { transform: translateY(3px); } .ds-btn-light:focus-visible { outline: 4px solid #ffd36b; outline-offset: 3px; }"
+    },
+    {
+      "name": "Answer Pieces",
+      "kind": "custom",
+      "refersTo": "answer-row-a",
+      "description": "Full-width plastic answer rows A-D with white letter tokens, shown in the reveal state: winner ringed, others dimmed, volume bars along the bottom edge.",
+      "html": "<div class=\"ds-book\"><div class=\"ds-row ds-a ds-win\"><span class=\"ds-tok\">A</span><span class=\"ds-txt\">Two large pizzas</span><b>7</b><i style=\"width:58%\"></i></div><div class=\"ds-row ds-b ds-out\"><span class=\"ds-tok\">B</span><span class=\"ds-txt\">A used car</span><b>3</b><i style=\"width:25%\"></i></div><div class=\"ds-row ds-c ds-out\"><span class=\"ds-tok\">C</span><span class=\"ds-txt\">A flight to Tokyo</span><b>1</b><i style=\"width:8%\"></i></div><div class=\"ds-row ds-d ds-out\"><span class=\"ds-tok\">D</span><span class=\"ds-txt\">A domain name</span><b>1</b><i style=\"width:8%\"></i></div></div>",
+      "css": ".ds-book { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #1d3e93; font-family: 'Bricolage Grotesque', system-ui, sans-serif; } .ds-row { position: relative; overflow: hidden; display: flex; align-items: center; gap: 16px; min-height: 64px; border-radius: 18px; padding: 8px 20px 14px 10px; box-shadow: inset 0 -10px 0 rgba(0,0,0,.18), 0 8px 14px rgba(0,0,0,.3); color: #fff; transition: filter .5s cubic-bezier(.16,1,.3,1); } .ds-row b { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 26px; } .ds-row i { position: absolute; left: 0; bottom: 0; height: 8px; background: rgba(255,255,255,.78); border-radius: 0 6px 0 0; } .ds-tok { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #fff; font-weight: 800; font-size: 26px; flex: none; } .ds-txt { flex: 1; font-size: 22px; font-weight: 600; } .ds-a { background: #d93a28; } .ds-a .ds-tok { color: #d93a28; } .ds-b { background: #23843a; } .ds-b .ds-tok { color: #23843a; } .ds-c { background: #0f78b5; } .ds-c .ds-tok { color: #0f78b5; } .ds-d { background: #f2b705; color: #14213d; } .ds-d .ds-tok { color: #14213d; } .ds-out { filter: saturate(.35) brightness(.75); } .ds-out:hover { filter: none; } .ds-win { outline: 5px solid #fff; outline-offset: 3px; overflow: visible; }"
+    },
+    {
+      "name": "Timer Token",
+      "kind": "custom",
+      "refersTo": "timer-token",
+      "description": "Ink disc with monospace seconds; grows, reddens and pulses in the last 5 seconds.",
+      "html": "<div class=\"ds-timers\"><span class=\"ds-timer\">24</span><span class=\"ds-timer ds-danger\">4</span></div>",
+      "css": ".ds-timers { display: flex; gap: 40px; align-items: center; padding: 24px; } .ds-timer { display: grid; place-items: center; width: 96px; height: 96px; border-radius: 50%; background: #14213d; color: #fff; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 48px; box-shadow: inset 0 -8px 0 rgba(0,0,0,.35); transition: transform .25s cubic-bezier(.16,1,.3,1), background .25s; } .ds-danger { background: #d93a28; transform: scale(1.18); animation: ds-pulse 1s ease-in-out infinite; } @keyframes ds-pulse { 50% { transform: scale(1.26); } } @media (prefers-reduced-motion: reduce) { .ds-danger { animation: none; } }"
+    },
+    {
+      "name": "Ticker Position",
+      "kind": "chip",
+      "refersTo": "ticker-position",
+      "description": "A player on the ticker strip: rank, ringed face, name, total, gold gain chip.",
+      "html": "<div class=\"ds-ticker\"><span class=\"ds-pos\"><span class=\"ds-rk\">1</span><span class=\"ds-face\" style=\"--pc:#23843a\">P</span>Peter <span class=\"ds-num\">120</span><span class=\"ds-chip\">+120</span></span><span class=\"ds-pos\"><span class=\"ds-rk\">2</span><span class=\"ds-face\" style=\"--pc:#0f78b5\">Z</span>Zuzka <span class=\"ds-num\">118</span><span class=\"ds-chip\">+118</span></span></div>",
+      "css": ".ds-ticker { display: flex; gap: 10px; background: #f4f1ea; border-radius: 14px; padding: 8px 10px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; } .ds-pos { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid #dcd5c4; border-radius: 10px; padding: 4px 12px 4px 4px; font-size: 18px; font-weight: 800; color: #14213d; } .ds-rk, .ds-num { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; } .ds-rk { color: #4a5578; font-size: 15px; padding-left: 4px; } .ds-face { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 3px solid var(--pc); font-size: 14px; } .ds-chip { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 14px; background: #ffd36b; color: #14213d; border-radius: 8px; padding: 2px 8px; }"
+    },
+    {
+      "name": "Points Chip",
+      "kind": "chip",
+      "refersTo": "points-chip",
+      "description": "Gold monospace chip for points gained; muted when zero.",
+      "html": "<span class=\"ds-pc\">+112</span> <span class=\"ds-pc ds-zero\">+0</span>",
+      "css": ".ds-pc { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 20px; background: #ffd36b; color: #14213d; border-radius: 8px; padding: 2px 10px; } .ds-zero { background: #eee9de; color: #4a5578; }"
+    },
+    {
+      "name": "Question Card",
+      "kind": "card",
+      "refersTo": "question-card",
+      "description": "White card stock carrying the question and its meta line, lifted off the board.",
+      "html": "<div class=\"ds-qwrap\"><div class=\"ds-qcard\"><h1>In 2010, what did someone famously buy for 10,000 bitcoin?</h1><p><b>7</b> of 12 got it right</p></div></div>",
+      "css": ".ds-qwrap { background: #1d3e93; padding: 24px; } .ds-qcard { background: #fff; border-radius: 26px; padding: 28px 36px 24px; box-shadow: 0 18px 34px rgba(0,0,0,.32); font-family: 'Bricolage Grotesque', system-ui, sans-serif; color: #14213d; } .ds-qcard h1 { margin: 0 0 10px; font-size: 36px; line-height: 1.06; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; } .ds-qcard p { margin: 0; font-size: 17px; font-weight: 600; color: #4a5578; } .ds-qcard p b { font-family: 'JetBrains Mono', ui-monospace, monospace; color: #14213d; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Printed-track well input for nickname and host login.",
+      "html": "<label class=\"ds-lab\">Nickname<input class=\"ds-in\" value=\"Anna\"></label>",
+      "css": ".ds-lab { display: flex; flex-direction: column; gap: 8px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 18px; color: #14213d; max-width: 320px; } .ds-in { font: inherit; font-size: 24px; font-weight: 600; color: #14213d; background: #f4f1ea; border: 3px solid #dcd5c4; border-radius: 14px; padding: 14px 16px; caret-color: #d93a28; } .ds-in:focus { outline: none; border-color: #14213d; }"
+    },
+    {
+      "name": "Player Tag",
+      "kind": "chip",
+      "refersTo": "player-tag",
+      "description": "Lobby name tag used above 30 players: player-colour dot plus name, on the deep tray.",
+      "html": "<div class=\"ds-tags\"><span class=\"ds-tag\"><i style=\"background:#864cbf\"></i>Jana</span><span class=\"ds-tag\"><i style=\"background:#0aa3a3\"></i>Tomas</span></div>",
+      "css": ".ds-tags { display: flex; gap: 10px; flex-wrap: wrap; background: #142d6e; padding: 18px; border-radius: 28px; } .ds-tag { display: flex; align-items: center; gap: 10px; background: #f4f1ea; border-radius: 999px; padding: 8px 18px 8px 10px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px; color: #14213d; } .ds-tag i { width: 18px; height: 18px; border-radius: 50%; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Game Night on the Trading Floor",
+    "overview": "The big screen is a family board-game table laid on a cobalt board: white card stock carries the words, glossy plastic pieces carry the answers, drawn faces sit in a box-insert tray like pawns, and the scores run along the top like a market ticker. The trading-floor half of the world is a light nod, never a costume: answers are \"positions\" with volume bars, standings show rank movement arrows and a \"trade of the round\", numbers are set in a monospace tape face. Nothing reads as a crypto product.\n\nDensity is low and sized for the back of the room. The presenter view is a fixed 1440 by 900 stage scaled to fit any laptop, TV or projector, so every measurement on it is designed once at full size. The phone is a controller: big stacked pieces, one card of text, almost nothing else. Fun is carried by moments (dealt-card countdown, reveal, podium rise), not by decoration.\n\nThe world rejects the flat purple 2x2 colour-block quiz look: answers are full-width plastic rows with a darker bottom edge, never four flat tiles.",
+    "keyCharacteristics": [
+      "Cobalt board ground; white card stock and off-white printed track sit on it.",
+      "Answer pieces in four saturated plastic colours, each always paired with its letter token.",
+      "Plastic pieces have a darker inset bottom edge; cards lift softly with no edge.",
+      "One display family at heavy weight; every number in a tabular monospace.",
+      "Gold means points and attention.",
+      "Player faces are hand-drawn on a white face, ringed in the player's own colour."
+    ],
+    "rules": [
+      {
+        "name": "The Letter Always Rides Along Rule",
+        "body": "An answer colour never appears without its letter token (A/B/C/D, or the True/False word). Colour is a second channel, not the code.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fixed Mapping Rule",
+        "body": "A red, B green, C blue, D yellow; True blue, False red. Identical on big screen and phone, in every question.",
+        "section": "colors"
+      },
+      {
+        "name": "The Gold Means Points Rule",
+        "body": "Gold is for points earned and for pointing at someone (winner, newcomer, focus). It is not a decorative accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Numbers Are Tape Rule",
+        "body": "Every digit that counts something (score, rank, timer, vote count, player count, answer value) is set in the monospace at 800 with tabular figures. Words never are.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two Weights Rule",
+        "body": "Text is 800 or 600. Nothing light, nothing italic.",
+        "section": "typography"
+      },
+      {
+        "name": "The Plastic Or Paper Rule",
+        "body": "A surface is either a piece (coloured, inset bottom edge, presses) or paper (white or track, soft lift, no edge). Never give a card a moulded edge, never give a piece a paper shadow alone.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do pair every answer colour with its letter token: A red, B green, C blue, D yellow; True blue, False red.",
+      "Do set every counted number in JetBrains Mono 800 with tabular figures.",
+      "Do build new presenter screens on the fixed 1440 by 900 stage with the 72px side margin, sized for the back of the room.",
+      "Do give coloured pieces the moulded inset bottom edge and a 3px press; give white cards a soft lift only.",
+      "Do use Points Gold for points and for pointing at a person; keep focus rings as a 4px gold outline.",
+      "Do keep motion short and ease-out (cubic-bezier(.16, 1, .3, 1)) and switch it all off under reduced motion.",
+      "Do draw icons as inline SVG (check, cross, rank triangles, medal)."
+    ],
+    "donts": [
+      "Don't lay four answers out as flat, edge-less 2x2 colour tiles.",
+      "Don't use text weights below 600 or italics.",
+      "Don't change or extend the answer colour mapping per screen; a fifth or sixth matching row uses the pair colours (#864cbf, #0aa3a3), never a reshuffle.",
+      "Don't set words in the monospace or numbers in the display face.",
+      "Don't use company logos or company colours; Qvizz is its own brand."
+    ]
+  }
+}

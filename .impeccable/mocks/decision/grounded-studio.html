@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Studio 72</title>
+<link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Barlow:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--wall:#0f4c5c;--wall2:#0b3a47;--tan:#f26a21;--mus:#f2b134;--teal:#1d7f74;--cherry:#c4263f;--ivory:#fff7ec}
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;font-family:Barlow,sans-serif;color:var(--ivory);position:relative;overflow:hidden;background:repeating-conic-gradient(from 0deg at 50% 110%,var(--wall) 0 6deg,var(--wall2) 6deg 12deg)}
+.screen{position:absolute;left:170px;right:170px;top:60px;height:390px;border-radius:60px;background:var(--ivory);color:var(--wall2);border:14px solid var(--mus);padding:50px 70px;box-shadow:0 18px 0 var(--tan)}
+.screen small{font-size:26px;font-weight:800;letter-spacing:.12em;color:#b8480c}
+.screen h1{font-family:Shrikhand;font-size:82px;line-height:1.05;font-weight:400;margin-top:14px;max-width:800px}
+.flip{position:absolute;right:56px;top:-40px;display:flex;gap:6px}
+.flip span{width:76px;height:104px;background:#1a1a1a;color:#fff;border-radius:10px;display:grid;place-items:center;font-size:76px;font-weight:800}
+.pods{position:absolute;left:120px;right:120px;bottom:50px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.pod{height:290px;border-radius:30px 30px 8px 8px;padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+.pod b{font-family:Shrikhand;font-size:96px;line-height:1;font-weight:400}
+.pod span{font-size:44px;font-weight:800;background:var(--ivory);color:var(--wall2);border-radius:12px;padding:6px 18px}
+.a{background:var(--cherry)}.b{background:var(--teal)}.c{background:#3c6fd1}.d{background:var(--mus);color:var(--wall2)}
+</style></head><body>
+<div class="screen"><small>QUESTION 1 OF 5</small><h1>What is the capital of Australia?</h1><div class="flip"><span>2</span><span>4</span></div></div>
+<div class="pods"><div class="pod a"><b>A</b><span>Sydney</span></div><div class="pod b"><b>B</b><span>Canberra</span></div><div class="pod c"><b>C</b><span>Melbourne</span></div><div class="pod d"><b>D</b><span>Perth</span></div></div>
+</body></html>

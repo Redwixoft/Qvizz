@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Reveal – big screen</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.qcard { padding-right: 52px; }
+.qcard .locked { position: static; margin-top: 18px; font-size: 26px; }
+.row.out { filter: saturate(.35) brightness(.75); }
+.row.win { outline: 6px solid #fff; outline-offset: 4px; }
+.row .tok svg { width: 44px; height: 44px; }
+/* Votes as order-book volume: a bar along each row sized by its share of the room,
+   so it reads the same with 5 players or 40. */
+.row { position: relative; overflow: hidden; }
+.row .vol { position: absolute; left: 0; bottom: 0; height: 12px; width: var(--v); background: rgba(255,255,255,.75); border-radius: 0 6px 0 0; }
+.chips { display: flex; align-items: center; gap: 16px; }
+.chips b { font-family: var(--num); font-size: 44px; font-weight: 800; min-width: 2ch; text-align: right; }
+.who { display: flex; align-items: center; }
+.who .face { width: 48px; height: 48px; border: 3px solid #fff; margin-left: -10px; }
+.who em { font-style: normal; font-family: var(--num); font-weight: 800; font-size: 22px; margin-left: 8px; }
+</style></head><body class="big">
+<div class="ticker">
+  <div class="pos"><i class="face" data-face="anna"></i><span class="name">Anna</span>412<span class="gain">+118</span></div>
+  <div class="pos"><i class="face" data-face="peter"></i><span class="name">Peter</span>380<span class="gain">+100</span></div>
+  <div class="pos"><i class="face" data-face="zuzka"></i><span class="name">Zuzka</span>298<span class="gain">+96</span></div>
+  <div class="pos"><i class="face" data-face="marek"></i><span class="name">Marek</span>210<span class="gain">+80</span></div>
+  <div class="pos"><i class="face" data-face="jana"></i><span class="name">Jana</span>190<span class="gain">+0</span></div>
+  <div class="pos"><i class="face" data-face="tomas"></i><span class="name">Tomas</span>150<span class="gain">+0</span></div>
+</div>
+<div class="qcard">
+  <h1>In 2010, what did someone famously buy for 10,000 bitcoin?</h1>
+  <div class="locked"><b>17</b> of 30 got it right · first in: Anna, Peter, Zuzka</div>
+</div>
+<div class="book">
+  <div class="row opt-a plastic win" style="--v:57%"><b class="tok"><svg viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#d93a28" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></b><span class="txt">Two large pizzas from a Florida pizza place</span>
+    <span class="chips"><span class="who"><i class="face" data-face="anna"></i><i class="face" data-face="peter"></i><i class="face" data-face="zuzka"></i><em>+14</em></span><b>17</b></span><i class="vol"></i></div>
+  <div class="row opt-b plastic out" style="--v:20%"><b class="tok">B</b><span class="txt">A used car from a dealer in Texas</span><span class="chips"><b>6</b></span><i class="vol"></i></div>
+  <div class="row opt-c plastic out" style="--v:13%"><b class="tok">C</b><span class="txt">A one-way flight from London to Tokyo</span><span class="chips"><b>4</b></span><i class="vol"></i></div>
+  <div class="row opt-d plastic out" style="--v:10%"><b class="tok">D</b><span class="txt">The very first domain name ever sold</span><span class="chips"><b>3</b></span><i class="vol"></i></div>
+</div>
+<script src="faces.js"></script>
+</body></html>

@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Qvizz screens</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+body { background: #e9edf5; font-family: var(--display); color: var(--ink); padding: 32px; }
+h1 { font-size: 32px; font-weight: 800; }
+h2 { font-size: 24px; font-weight: 800; margin-top: 44px; }
+p.lead { margin-top: 6px; font-size: 17px; color: var(--ink-soft); max-width: 70ch; line-height: 1.45; }
+.wall { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 18px; align-items: flex-start; }
+figure { margin: 0; }
+figcaption { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+figcaption a { color: var(--board); font-weight: 600; margin-left: 6px; font-size: 14px; }
+.frame { overflow: hidden; border-radius: 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); background: #fff; }
+.frame iframe { border: 0; transform-origin: 0 0; }
+.big iframe { width: 1440px; height: 900px; }
+.ph { width: 260px; height: 543px; border-radius: 28px; border: 9px solid #111; }
+.ph iframe { width: 390px; height: 844px; transform: scale(.6); }
+</style></head><body>
+<h1>Qvizz · Game Night × Trading Floor</h1>
+<p class="lead">The board-game table with answers laid out like trading positions. Screens in game order; open any one at full size with its link. Faces and names are placeholders.</p>
+
+<h2>Big screen</h2>
+<div class="wall" id="big"></div>
+
+<h2>Phone</h2>
+<div class="wall" id="phone"></div>
+
+<script>
+const big = [
+  ['lobby.html?n=9', 'Lobby: 9 players'], ['lobby.html?n=30', 'Lobby: 30 players'], ['lobby.html?n=50', 'Lobby: 50 players (names only)'], ['countdown.html', 'Countdown'],
+  ['question.html', 'Question: pick one of four'], ['truefalse.html', 'Question: true / false'],
+  ['matching.html', 'Question: match the pairs'], ['number.html', 'Question: closest number'],
+  ['reveal.html', 'Reveal: how the room voted'], ['reveal-number.html', 'Reveal: closest number'],
+  ['ranking.html', 'Standings after each question'], ['podium.html', 'Final podium'],
+  ['pawn-race.html', 'Idea: pawns racing on the score track'], ['board-rim.html', 'Idea: board-game rim around the screen']
+];
+const phone = [
+  ['p-join.html', 'Join'], ['p-draw.html', 'Draw your face'], ['p-wait.html', 'Waiting in the lobby'],
+  ['phone.html', 'Answer: pick one'], ['p-matching.html', 'Answer: match pairs'], ['p-number.html', 'Answer: closest number'],
+  ['p-result.html', 'After each question'], ['p-final.html', 'Final place']
+];
+const fig = (src, label, cls) =>
+  `<figure><figcaption>${label}<a href="${src}">full size</a></figcaption><div class="frame ${cls}"><iframe src="${src}" title="${label}" loading="lazy"></iframe></div></figure>`;
+document.getElementById('big').innerHTML = big.map(([s, l]) => fig(s, l, 'big')).join('');
+document.getElementById('phone').innerHTML = phone.map(([s, l]) => fig(s, l, 'ph')).join('');
+
+// Fit the big-screen frames to the width so the board never scrolls sideways.
+function fit() {
+  const w = Math.min(560, document.body.clientWidth - 64);
+  document.querySelectorAll('.big').forEach(f => {
+    f.style.width = w + 'px'; f.style.height = (w * 900 / 1440) + 'px';
+    f.querySelector('iframe').style.transform = `scale(${w / 1440})`;
+  });
+}
+addEventListener('resize', fit); fit();
+</script>
+</body></html>

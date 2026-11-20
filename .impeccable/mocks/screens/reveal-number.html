@@ -1,0 +1,67 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Closest number reveal – big screen</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.qcard { padding-right: 52px; }
+.qcard .locked { position: static; margin-top: 18px; font-size: 26px; }
+.chart { position: absolute; left: 72px; right: 72px; top: 400px; bottom: 60px; background: var(--board-deep); border-radius: 26px; padding: 36px 70px; color: #fff; }
+.answer { display: flex; align-items: baseline; gap: 18px; }
+.answer b { font-family: var(--num); font-size: 96px; font-weight: 800; color: var(--gold); line-height: 1; }
+.answer span { font-size: 32px; font-weight: 800; }
+.axis { position: absolute; left: 70px; right: 70px; bottom: 70px; height: 210px; }
+.axis .line { position: absolute; left: 0; right: 0; bottom: 40px; height: 8px; border-radius: 4px; background: #3a5bb0; }
+.axis .lbl { position: absolute; bottom: 0; transform: translateX(-50%); font-family: var(--num); font-weight: 800; font-size: 20px; color: #a9bbe8; }
+.axis .target { position: absolute; bottom: 40px; width: 6px; height: 190px; margin-left: -3px; background: var(--gold); border-radius: 3px; }
+.pin { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pin .face { width: 62px; height: 62px; border: 4px solid #fff; }
+.pin span { font-family: var(--num); font-weight: 800; font-size: 18px; background: #fff; color: var(--ink); border-radius: 6px; padding: 2px 6px; }
+.pin.best span { background: var(--gold); }
+.dot { position: absolute; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #a9bbe8; }
+.closest { position: absolute; right: 56px; top: 28px; width: 560px; list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.closest li { display: flex; align-items: center; gap: 10px; background: #fff; color: var(--ink); border-radius: 12px; padding: 6px 12px 6px 6px; font-size: 20px; }
+.closest li:first-child { background: var(--gold); }
+.closest .face { width: 36px; height: 36px; }
+.closest b { flex: 1; font-weight: 800; }
+.closest span, .closest em { font-family: var(--num); font-weight: 800; font-style: normal; }
+.closest em { color: var(--ink-soft); }
+</style></head><body class="big">
+<div class="ticker">
+  <div class="pos"><i class="face" data-face="peter"></i><span class="name">Peter</span>600<span class="gain">+120</span></div>
+  <div class="pos"><i class="face" data-face="anna"></i><span class="name">Anna</span>552<span class="gain">+60</span></div>
+  <div class="pos"><i class="face" data-face="marek"></i><span class="name">Marek</span>350<span class="gain">+60</span></div>
+  <div class="pos"><i class="face" data-face="zuzka"></i><span class="name">Zuzka</span>338<span class="gain">+40</span></div>
+  <div class="pos"><i class="face" data-face="jana"></i><span class="name">Jana</span>290<span class="gain">+20</span></div>
+  <div class="pos"><i class="face" data-face="tomas"></i><span class="name">Tomas</span>150<span class="gain">+0</span></div>
+</div>
+<div class="qcard">
+  <h1>How many bitcoins will ever exist, in millions?</h1>
+  <div class="locked">Closest: <b>Zuzka</b> guessed 21 exactly · +100</div>
+</div>
+<div class="chart">
+  <div class="answer"><b>21</b><span>million</span></div>
+  <div class="axis">
+    <div class="line"></div>
+    <span class="lbl" style="left:0">0</span><span class="lbl" style="left:25%">25</span><span class="lbl" style="left:50%">50</span><span class="lbl" style="left:75%">75</span><span class="lbl" style="left:100%">100</span>
+    <div class="target" style="left:21%"></div>
+    <div id="dots"></div>
+    <!-- only the winner gets a face on the line; every other guess is a dot, so 30+ guesses stay readable -->
+    <div class="pin best" style="left:21%;bottom:56px"><i class="face" data-face="zuzka"></i><span>21</span></div>
+  </div>
+  <ol class="closest">
+    <li><i class="face" data-face="zuzka"></i><b>Zuzka</b><span>21</span><em>+100</em></li>
+    <li><i class="face" data-face="anna"></i><b>Anna</b><span>20</span><em>+90</em></li>
+    <li><i class="face" data-face="g9"></i><b>Juraj</b><span>23</span><em>+80</em></li>
+    <li><i class="face" data-face="peter"></i><b>Peter</b><span>18</span><em>+70</em></li>
+    <li><i class="face" data-face="g12"></i><b>Simona</b><span>25</span><em>+65</em></li>
+  </ol>
+</div>
+<script src="faces.js"></script>
+<script>
+// mock: 25 further guesses as dots, stacked where they bunch up
+const guesses = [2,5,8,10,10,12,15,15,15,30,30,32,35,40,42,50,50,50,60,64,75,80,88,95,100];
+const seen = {};
+document.getElementById('dots').innerHTML = guesses.map(g => {
+  const k = Math.round(g / 2); seen[k] = (seen[k] || 0) + 1;
+  return `<i class="dot" style="left:${g}%;bottom:${40 + seen[k] * 16}px"></i>`;
+}).join('');
+</script>
+</body></html>

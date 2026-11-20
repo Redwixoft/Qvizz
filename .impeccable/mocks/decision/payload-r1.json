@@ -1,0 +1,80 @@
+{
+  "title": "Qvizz: themes, round 2",
+  "question": "Your two favourites, reworked for 8-word answers, plus three new ideas with a light crypto nod. Every sketch uses the same long-answer question.",
+  "options": [
+    {
+      "id": "studio",
+      "kind": "grounded",
+      "label": "Studio 72",
+      "lineage": "1970s TV game-show set; flip-digit boards are also the old stock-exchange boards",
+      "thesis": "Everyone is a contestant on a 70s TV quiz; flip-digit scores give a quiet nod to the old exchange boards.",
+      "palette": ["#0f4c5c", "#0b3a47", "#fff7ec", "#c4263f", "#1d7f74", "#3c6fd1", "#f2b134", "#f26a21"],
+      "materials": ["sunburst set wall", "rounded TV screen", "answer podiums", "flip-digit counters"],
+      "viewport": "Question on a rounded TV-screen panel with a flip-digit timer; four wide answer podiums in a 2x2 grid, long text on two lines.",
+      "risk": "The 70s lettering must stay on headings only, or it starts to feel like fancy dress.",
+      "html": ".impeccable/mocks/decision/r1-studio.html"
+    },
+    {
+      "id": "gamenight",
+      "kind": "grounded",
+      "label": "Game Night",
+      "lineage": "family board-game box: board, cards, pawns, chips",
+      "thesis": "The big screen is a game board; players are pawns on the score track, and the vote chips double as tokens.",
+      "palette": ["#1d3e93", "#f4f1ea", "#14213d", "#d93a28", "#2a8c3d", "#2563c9", "#f2b705"],
+      "materials": ["printed board", "card stock", "plastic pieces", "chips as tokens"],
+      "viewport": "Score track with face pawns across the top; question on a wide white card; four plastic answer tiles in a 2x2 grid.",
+      "risk": "Can lean childish if the pieces get too cute.",
+      "html": ".impeccable/mocks/decision/r1-gamenight.html"
+    },
+    {
+      "id": "trading",
+      "kind": "grounded",
+      "label": "Trading Floor",
+      "lineage": "exchange big boards and market tickers",
+      "thesis": "The quiz runs like a market: players are tickers, every answer moves your price.",
+      "palette": ["#0a1226", "#111c38", "#ffb627", "#2fd18f", "#ff6b57", "#35c4d6", "#9b7bff", "#ffc93c"],
+      "materials": ["ticker crawl", "big-board panels", "digital clock", "order-book rows"],
+      "viewport": "Ticker crawl of players and points across the top; question large; four full-width answer rows stacked like an order book, ideal for long answers.",
+      "risk": "Most crypto-coded of the five; red and green read as down and up, so the answer colours move to coral, cyan, violet and gold.",
+      "html": ".impeccable/mocks/decision/r1-trading.html"
+    },
+    {
+      "id": "mint",
+      "kind": "grounded",
+      "label": "The Mint",
+      "lineage": "coin minting, medals and engraved banknote patterns",
+      "thesis": "Points are minted coins: the timer is a gold coin, the podium hands out gold, silver and bronze.",
+      "palette": ["#17181d", "#23252d", "#d9ab3f", "#a77b1f", "#c9ced8", "#f6f3ec", "#c8414b", "#2f8f6a", "#3d6dbf"],
+      "materials": ["engraved guilloche ground", "gold coin", "enamel plaques"],
+      "viewport": "A gold coin timer beside the question in a warm serif; four enamel answer plaques in a 2x2 grid on dark graphite.",
+      "risk": "The calmest and most grown-up; needs the coin moments (reveal, podium) to bring the fun.",
+      "html": ".impeccable/mocks/decision/r1-mint.html"
+    },
+    {
+      "id": "blocks",
+      "kind": "grounded",
+      "label": "Block by Block",
+      "lineage": "toy building blocks meeting a blockchain",
+      "thesis": "Each question is a block added to the chain; the quiz literally builds a chain as you play.",
+      "palette": ["#dfe7fb", "#17204a", "#9aa8d6", "#e2483a", "#2c9a56", "#2f6fe0", "#f4b81c"],
+      "materials": ["chunky blocks", "chain links", "soft sky ground"],
+      "viewport": "A chain of numbered blocks across the top, the current one lit yellow; big question; four chunky answer blocks in a 2x2 grid.",
+      "risk": "Light ground is friendlier on a TV than in a dark hall; the crypto joke is subtle and may go unnoticed.",
+      "html": ".impeccable/mocks/decision/r1-blocks.html"
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code" },
+  "canon": true,
+  "canonCard": {
+    "kind": "canon",
+    "label": "The category standard",
+    "thesis": "What Kahoot, Mentimeter and Slido quizzes look like, done cleanly.",
+    "palette": ["#46178f", "#ffffff", "#c3162f", "#1368ce", "#8a6400", "#1f700a"],
+    "materials": ["flat colour blocks", "system sans"],
+    "viewport": "White question bar, round timer, four colour blocks in a 2x2 grid.",
+    "risk": "Looks like every other quiz app.",
+    "html": ".impeccable/mocks/decision/r1-canon.html"
+  },
+  "steer": true
+}

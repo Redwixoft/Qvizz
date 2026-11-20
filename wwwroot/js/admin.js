@@ -1,0 +1,373 @@
+(() => {
+  const { LETTERS, colourOf, esc, $, face, item, optClass, fmt, ICON, move, Countdown, renderTimer, connect, toast } = Qvizz;
+  const conn = connect();
+  const countdown = new Countdown();
+  const stage = $('#stage');
+  let state = null;
+  let renderedKey = null;
+  const seen = new Set();   // players already seated in the lobby (only newcomers animate in)
+
+  // ---------- fit the 1440×900 stage to any screen ----------
+  function fit() {
+    const s = Math.min(innerWidth / 1440, innerHeight / 900);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+  }
+  addEventListener('resize', fit);
+  fit();
+
+  // ---------- login ----------
+  const PW_KEY = 'qvizz.adminPassword';
+  async function login(password) {
+    const ok = await conn.invoke('AdminLogin', password);
+    if (ok) {
+      sessionStorage.setItem(PW_KEY, password);
+      $('#login').classList.add('hidden');
+      $('#app').classList.remove('hidden');
+      fit();
+    } else {
+      sessionStorage.removeItem(PW_KEY);
+      $('#loginError').textContent = 'That password is not right. Try again.';
+    }
+    return ok;
+  }
+  $('#login').addEventListener('submit', e => { e.preventDefault(); login($('#password').value); });
+
+  // ---------- host controls ----------
+  const call = (method, ...args) => conn.invoke(method, ...args).catch(err => toast(err.message));
+  document.addEventListener('click', e => {
+    const kick = e.target.closest('[data-kick]');
+    if (kick) {
+      if (confirm(`Remove ${kick.dataset.name} from the game? They can join again under another name.`)) call('KickPlayer', kick.dataset.kick);
+      return;
+    }
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    if (b.dataset.confirm && !confirm(b.dataset.confirm)) return;
+    b.disabled = true;
+    call(b.dataset.act);
+  });
+  $('#resetBtn').onclick = () => {
+    if (confirm('End this game and open a new lobby? Everyone has to join again. This game is kept in the archive.')) call('NewGame');
+  };
+  $('#fullBtn').onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  $('#playersBtn').onclick = () => { $('#playersPanel').classList.toggle('hidden'); renderPlayersPanel(); };
+
+  // Host-only list of everyone at the table, with a Remove button (works in any phase).
+  function renderPlayersPanel() {
+    const panel = $('#playersPanel');
+    if (!state || panel.classList.contains('hidden')) { panel.innerHTML = ''; return; }
+    const rows = [...state.players].sort((a, b) => a.seat - b.seat).map(p => `
+      <li>${face(p)}<span class="nm">${esc(p.nickname)}</span><span class="num">${fmt(p.score)}</span>
+        <button type="button" data-kick="${p.id}" data-name="${esc(p.nickname)}">Remove</button></li>`).join('');
+    panel.innerHTML = `<h2>Players (${state.players.length})</h2>${rows ? `<ul>${rows}</ul>` : '<p>Nobody has joined yet.</p>'}`;
+  }
+
+  // ---------- rendering ----------
+  conn.on('adminState', s => {
+    state = s;
+    $('#saveNote').classList.toggle('hidden', s.persistent);
+    renderPlayersPanel();
+    render();
+  });
+
+  function render() {
+    const s = state;
+    const key = `${s.phase}:${s.questionIndex}`;
+    if (key === renderedKey && s.phase !== 'Lobby') {
+      const meta = $('#answered');
+      if (meta) meta.innerHTML = lockedText(s);
+      return;
+    }
+    renderedKey = key;
+    countdown.stop();
+    stage.classList.toggle('centered', s.phase === 'Question');
+    switch (s.phase) {
+      case 'Lobby': stage.innerHTML = lobby(s); break;
+      case 'Countdown': countdownScreen(s); break;
+      case 'Question': questionScreen(s); break;
+      case 'Reveal': revealScreen(s); break;
+      case 'Leaderboard': stage.innerHTML = standings(s); break;
+      case 'Awards': stage.innerHTML = awards(s); break;
+      case 'Finished': stage.innerHTML = podium(s); break;
+    }
+  }
+
+  // ----- lobby: faces up to 30 players, name tags above -----
+  function lobby(s) {
+    const n = s.players.length;
+    const newest = n > 1 ? Math.max(...s.players.map(p => p.seat)) : -1;
+    const bySeat = [...s.players].sort((a, b) => a.seat - b.seat);
+    const cls = p => [p.avatarUrl ? '' : 'drawing', p.connected ? '' : 'offline', p.seat === newest ? 'new' : '', seen.has(p.id) ? '' : 'fresh'].join(' ');
+    // a small remove button for the host, shown on hover / keyboard focus
+    const kick = p => `<button type="button" class="kick" data-kick="${p.id}" data-name="${esc(p.nickname)}" aria-label="Remove ${esc(p.nickname)}">${ICON.cross('#14213d')}</button>`;
+    let tray;
+    if (n > 30) {
+      const size = n <= 45 ? 30 : n <= 60 ? 24 : 19;
+      tray = `<div class="tray names" style="--name:${size}px">${bySeat.map(p =>
+        `<div class="tag ${cls(p)}" style="--pc:${colourOf(p)}"><i></i><span>${esc(p.nickname)}</span>${kick(p)}</div>`).join('')}</div>`;
+    } else {
+      const [cols, faceSize, name, gap] = n <= 12 ? [4, 104, 26, 16] : n <= 20 ? [5, 88, 22, 14] : [6, 70, 19, 12];
+      const slots = bySeat.map(p => `<div class="slot ${cls(p)}">${face(p)}<b>${esc(p.nickname)}</b>${p.avatarUrl ? '' : '<small>drawing…</small>'}${kick(p)}</div>`);
+      for (let i = n; i < cols * 3; i++) slots.push('<div class="slot empty">free seat</div>');
+      tray = `<div class="tray" style="--cols:${cols};--face:${faceSize}px;--name:${name}px;--gap:${gap}px">${slots.join('')}</div>`;
+    }
+    s.players.forEach(p => seen.add(p.id));
+    const joinUrl = s.joinUrl || `${location.origin}/game`;
+    return `<div class="lobby">
+      <div class="mark">Qvizz<i>.</i></div>
+      <div class="join">
+        <h2>Scan to join</h2>
+        <div class="qr-row"><div class="qr">${qrSvg(joinUrl)}</div>
+          <ol><li>Scan with your phone camera</li><li>Pick a nickname</li><li>Draw your face</li></ol></div>
+        <div class="url">${esc(joinUrl.replace(/^https?:\/\//, ''))}</div>
+      </div>
+      <div class="count"><b>${n}</b>player${n === 1 ? '' : 's'} at the table</div>
+      <button class="btn start plastic" data-act="StartQuiz" ${n ? '' : 'disabled'}>Start the game</button>
+      ${tray}
+    </div>`;
+  }
+
+  // QR code for the join address (qrcode-generator, loaded in admin.html).
+  function qrSvg(url) {
+    if (typeof qrcode !== 'function') return '';
+    const qr = qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    return qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true, alt: `QR code for ${url}` });
+  }
+
+  // ----- countdown -----
+  function countdownScreen(s) {
+    stage.innerHTML = `<div class="lobby">
+      <div class="cd-title">The fun begins now!</div>
+      <div class="deal"><div class="c"></div><div class="c"></div><div class="top"><b id="cd"></b></div></div>
+      <div class="cd-sub">${s.questionCount} questions · ${s.players.length} players · phones ready</div>
+    </div>`;
+    countdown.start(s.remainingMs, secs => {
+      const el = $('#cd');
+      if (el && el.textContent !== String(secs)) { el.textContent = secs; el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip'); }
+    });
+  }
+
+  // ----- ticker of positions -----
+  function ticker(s) {
+    // Before anyone has scored, ranks and +0 chips mean nothing: show who's playing.
+    const fresh = s.players.every(p => p.score === 0);
+    const items = s.players.map(p => fresh
+      ? `<span class="pos">${face(p)}${esc(p.nickname)}</span>`
+      : `<span class="pos"><span class="rk">${p.rank}</span>${face(p)}${esc(p.nickname)} <span class="num">${fmt(p.score)}</span><span class="chip ${p.gain ? '' : 'zero'}">+${p.gain}</span></span>`).join('');
+    return `<div class="ticker" id="ticker"><div class="ticker-track">${items}</div></div>`;
+  }
+  function startCrawl() {
+    const t = $('#ticker'); if (!t) return;
+    const track = t.firstElementChild;
+    if (track.scrollWidth > t.clientWidth) {
+      track.innerHTML += track.innerHTML;                         // seamless loop
+      t.style.setProperty('--crawl', `${Math.max(20, track.scrollWidth / 90)}s`);
+      t.classList.add('crawl');
+    }
+  }
+
+  const qSize = text => text.length > 110 ? 44 : text.length > 70 ? 52 : 60;
+
+  function lockedText(s) {
+    const t = s.question?.type;
+    const verb = t === 'Grouping' ? 'arranging' : t === 'ClosestNumber' ? 'guesses in' : 'locked in';
+    return `<b>${s.answeredCount}</b> of ${s.players.filter(p => p.connected).length} ${verb}`;
+  }
+
+  function card(s, side, meta) {
+    const q = s.question;
+    return `<section class="qcard" style="--qsize:${qSize(q.text)}px">
+      <h1>${esc(q.text)}</h1>
+      ${q.image ? `<img class="qimg" src="${esc(q.image)}" alt="">` : ''}
+      <div class="meta" id="answered">${meta}</div>
+      <div class="clock">${side}</div>
+    </section>`;
+  }
+
+  // ----- question -----
+  function questionScreen(s) {
+    const q = s.question;
+    const clock = `<div class="tok" id="timer"></div><span>Q ${s.questionIndex + 1} / ${s.questionCount}</span>`;
+    let body = '';
+    if (q.type === 'MultipleChoice') {
+      body = `<div class="book">${q.options.map((o, i) => `
+        <div class="row ${optClass(q.type, i)} plastic"><b class="tok">${LETTERS[i]}</b><span class="txt">${esc(o)}</span></div>`).join('')}</div>`;
+    } else if (q.type === 'TrueFalse') {
+      body = `<div class="tf">${q.options.map((o, i) => `
+        <div class="row ${optClass(q.type, i)} plastic"><b class="tok">${LETTERS[i]}</b><span class="txt">${esc(o)}</span></div>`).join('')}</div>`;
+    } else if (q.type === 'Grouping') {
+      body = `<div class="cols">${q.groupLeft.map((l, i) => `
+        <div class="it left"><span class="n">${i + 1}</span>${item(l)}</div><div class="it">${item(q.groupRight[i])}</div>`).join('')}</div>`;
+    } else {
+      body = `<div class="chart"><h2>Type your guess on your phone</h2>
+        <p>You can change it until the time runs out. The closest guess takes 100 points, then 90, 80…</p></div>`;
+    }
+    // No standings ticker while a question is running: players focus on the question.
+    // Scores come back on the reveal and the standings screen.
+    stage.innerHTML = card(s, clock, lockedText(s)) + body;
+    countdown.start(s.remainingMs, secs => renderTimer($('#timer'), secs));
+  }
+
+  // ----- reveal -----
+  function nextButton(s) {
+    const last = s.questionIndex === s.questionCount - 1;
+    return `<button class="btn plastic" data-act="Next">${last ? 'Final results' : 'Standings'}</button>`;
+  }
+
+  function revealScreen(s) {
+    const q = s.question, r = s.reveal;
+    const firstNames = r.firstCorrect.map(p => esc(p.nickname)).join(', ');
+    let body = '', meta = '';
+
+    if (q.type === 'MultipleChoice' || q.type === 'TrueFalse') {
+      meta = !r.answeredPlayers ? 'Nobody answered this one' : `<b>${r.correctPlayers}</b> of ${r.answeredPlayers} got it right${firstNames ? ` · first in: ${firstNames}` : ''}`;
+      const total = Math.max(1, r.answeredPlayers);
+      const rows = q.options.map((o, i) => {
+        const win = i === r.correctIndex;
+        const faces = win && r.firstCorrect.length
+          ? `<span class="who">${r.firstCorrect.map(p => face(p)).join('')}${r.correctPlayers > r.firstCorrect.length ? `<em>+${r.correctPlayers - r.firstCorrect.length}</em>` : ''}</span>` : '';
+        const tokColour = getComputedStyle(document.documentElement).getPropertyValue(q.type === 'TrueFalse' ? (i ? '--red' : '--blue') : ['--red', '--green', '--blue', '--ink'][i]);
+        return `<div class="row ${optClass(q.type, i)} plastic ${win ? 'win' : 'out'}" data-v="${(r.optionCounts[i] / total) * 100}">
+          <b class="tok">${win ? ICON.check(tokColour.trim()) : LETTERS[i]}</b><span class="txt">${esc(o)}</span>
+          <span class="chips">${faces}<b>${r.optionCounts[i]}</b></span><i class="vol"></i></div>`;
+      }).join('');
+      body = `<div class="${q.type === 'TrueFalse' ? 'tf' : 'book'}">${rows}</div>`;
+    } else if (q.type === 'Grouping') {
+      meta = !r.answeredPlayers ? 'Nobody answered this one' : `<b>${r.correctPlayers}</b> of ${r.answeredPlayers} matched every pair${firstNames ? ` · first: ${firstNames}` : ''}`;
+      body = `<div class="cols">${r.correctPairs.map((p, i) => `
+        <div class="it left ok"><span class="n">${i + 1}</span>${item(p.left)}</div><div class="it">${item(p.right)}</div>`).join('')}</div>`;
+    } else {
+      const best = r.closestGuesses[0];
+      const winners = r.closestGuesses.filter(g => best && g.points === best.points).map(g => esc(g.nickname));
+      meta = best ? `Closest: <strong>${winners.join(', ')}</strong> guessed ${fmt(best.guess)} · +${best.points}` : 'Nobody guessed this time';
+      body = numberReveal(q, r);
+    }
+    stage.innerHTML = ticker(s) + card(s, nextButton(s), meta) + body;
+    startCrawl();
+    // grow the vote-volume bars once the rows are on screen
+    requestAnimationFrame(() => requestAnimationFrame(() =>
+      stage.querySelectorAll('.row[data-v] .vol').forEach(v => v.style.width = v.parentElement.dataset.v + '%')));
+  }
+
+  function numberReveal(q, r) {
+    const values = [...r.allGuesses, r.correctNumber];
+    let lo = Math.min(0, ...values), hi = Math.max(...values);
+    if (hi === lo) hi = lo + 1;
+    const step = niceStep((hi - lo) / 4);
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const at = v => ((v - lo) / (hi - lo)) * 100;
+    const labels = [];
+    for (let v = lo; v <= hi + step / 2; v += step) labels.push(`<span class="lbl" style="left:${at(v)}%">${fmt(v)}</span>`);
+    const best = r.closestGuesses[0];
+    const stack = {};
+    const dots = r.allGuesses.filter((g, i) => !(best && g === best.guess && i === r.allGuesses.indexOf(best.guess))).map(g => {
+      const k = Math.round(at(g) / 1.5); stack[k] = (stack[k] || 0) + 1;
+      return `<i class="dot" style="left:${at(g)}%;bottom:${40 + stack[k] * 16}px"></i>`;
+    }).join('');
+    // the winner's face sits on top of any pile of dots at its spot
+    const pile = best ? Math.min(7, Math.max(0, ...[-1, 0, 1].map(o => stack[Math.round(at(best.guess) / 1.5) + o] || 0))) : 0;
+    return `<div class="chart">
+      <div class="answer-big"><b>${fmt(r.correctNumber)}</b><span>${esc(q.unit || '')}</span></div>
+      <ol class="closest">${r.closestGuesses.map(g => `<li>${face({ ...g })}<b>${esc(g.nickname)}</b><span>${fmt(g.guess)}</span><em>+${g.points}</em></li>`).join('')}</ol>
+      <div class="axis"><div class="line"></div>${labels.join('')}
+        <div class="target" style="left:${at(r.correctNumber)}%"></div>${dots}
+        ${best ? `<div class="pin" style="left:${at(best.guess)}%;bottom:${56 + pile * 16}px">${face({ ...best })}<span>${fmt(best.guess)}</span></div>` : ''}
+      </div></div>`;
+  }
+  function niceStep(raw) {
+    const p = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+    return [1, 2, 2.5, 5, 10].map(m => m * p).find(v => v >= raw) || 10 * p;
+  }
+
+  // ----- standings -----
+  function standings(s) {
+    const lines = s.leaderboard.map((p, i) => {
+      const m = move(p);
+      return `<div class="line ${i === 0 ? 'first' : ''}" style="animation-delay:${i * 80}ms">
+        <span class="rank">${p.rank}</span><span class="move ${m.cls}">${m.icon}${m.n}</span>${face(p)}
+        <span class="nm">${esc(p.nickname)}</span><span class="chip ${p.gain ? '' : 'zero'}">+${p.gain}</span><span class="total">${fmt(p.score)}</span></div>`;
+    }).join('');
+    // trade of the round: biggest climb, then biggest gain
+    const climber = [...s.players].sort((a, b) => ((b.prevRank - b.rank) - (a.prevRank - a.rank)) || (b.gain - a.gain))[0];
+    const climb = climber ? climber.prevRank - climber.rank : 0;
+    const played = s.questionIndex + 1, left = s.questionCount - played;
+    return `<div class="standings">
+      <h1>Standings<span>after Q ${played} / ${s.questionCount}</span></h1>
+      <div class="sheet"><div class="head"><span>Rank</span><span></span><span></span><span>Player</span><span class="r">This round</span><span class="r">Total</span></div>${lines}</div>
+      <div class="side">
+        ${climber ? `<div class="trade"><h2>Trade of the round</h2><div class="p">${face(climber)}<div><b>${esc(climber.nickname)}</b>
+          <small>${climb > 0 ? `climbed ${climb} place${climb === 1 ? '' : 's'} with +${climber.gain}` : `+${climber.gain} this round`}</small></div></div></div>` : ''}
+        <div class="pile"><div class="c"></div><div class="c"></div><div class="c"><div><b>${played}</b><span>card${played === 1 ? '' : 's'} played<br>${left} to go</span></div></div></div>
+        <button class="btn next plastic" data-act="Next">Next question</button>
+      </div>
+    </div>`;
+  }
+
+  // ----- podium -----
+  function podium(s) {
+    const [first, second, third] = s.leaderboard;
+    // Medal, colour and block height follow the rank, so tied players share gold (or silver).
+    const look = {
+      1: { medal: '#ffd36b', block: '#f2b705', h: 300 },
+      2: { medal: '#eef1f6', block: '#c9ced8', h: 220 },
+      3: { medal: '#e9a56c', block: '#d08a4e', h: 170 }
+    };
+    const place = (p, cls) => {
+      if (!p) return '';
+      const l = look[Math.min(p.rank, 3)];
+      return `<div class="place ${cls}">${face(p)}<span class="nm">${esc(p.nickname)}</span>
+      <div class="block" style="height:${l.h}px;background:${l.block}">${ICON.medal(l.medal)}<span class="pts">${fmt(p.score)}</span></div></div>`;
+    };
+    const champions = s.leaderboard.filter(p => p.rank === 1);
+    const title = !first ? 'Game over'
+      : champions.length === 1 ? `${esc(first.nickname)} takes the table!`
+      : champions.length === 2 ? `${esc(champions[0].nickname)} and ${esc(champions[1].nickname)} share the table!`
+      : `A ${champions.length}-way tie for the table!`;
+    const rest = s.players.slice(3, 7).map(p =>
+      `<span class="pos"><span class="rk">${p.rank}</span>${face(p)}${esc(p.nickname)} <span class="num">${fmt(p.score)}</span></span>`).join('');
+    return `<div class="lobby">
+      <div class="podium-title">${title}</div>
+      <div class="podium">${place(second, 'p2')}${place(first, 'p1')}${place(third, 'p3')}</div>
+      <div class="rest">${rest}</div>
+      <button class="btn light plastic newgame" data-act="NewGame"
+        data-confirm="Start a new game? This one is saved in the archive and everyone joins again.">New game</button>
+    </div>`;
+  }
+
+  // ----- awards: one trophy card per award, revealed one after another -----
+  function awards(s) {
+    const cards = s.awards.map((a, i) => `
+      <article class="award" style="animation-delay:${300 + i * 450}ms">
+        <h2>${esc(a.title)}</h2>
+        <p class="blurb">${esc(a.blurb)}</p>
+        ${face(a.winner)}
+        <b class="nm">${esc(a.winner.nickname)}</b>
+        <span class="stat">${esc(a.stat)}</span>
+      </article>`).join('');
+    return `<div class="lobby awards-screen">
+      <h1 class="awards-title">And the awards go to…</h1>
+      <div class="award-grid ${s.awards.length <= 4 ? 'few' : ''}">${cards}</div>
+      <button class="btn plastic next-podium" data-act="Next">Final podium</button>
+    </div>`;
+  }
+
+  // ---------- connection ----------
+  conn.onreconnected(() => {
+    renderedKey = null;
+    const pw = sessionStorage.getItem(PW_KEY);
+    if (pw) login(pw);
+  });
+  conn.onclose(() => setTimeout(start, 3000));
+  async function start() {
+    try {
+      await conn.start();
+      const pw = sessionStorage.getItem(PW_KEY);
+      if (pw) await login(pw);
+    } catch {
+      setTimeout(start, 3000);
+    }
+  }
+  start();
+})();

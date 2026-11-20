@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "qvizz",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "C:/IT/Qvizz/Qvizz.csproj", "--", "--Game:QuestionSeconds=12", "--Game:GroupingSeconds=15"],
+      "port": 5080
+    },
+    {
+      "name": "mocks",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:/Users/tpaul/AppData/Local/Temp/claude/d902d2db8ceeab7e/87e532f8-61d0-4c00-a362-71ed822066c1/scratchpad/serve-mocks.js", "C:/IT/Qvizz/.impeccable/mocks/screens", "5090"],
+      "port": 5090
+    }
+  ]
+}

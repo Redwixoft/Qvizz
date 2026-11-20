@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Closest number – big screen</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.chart { position: absolute; left: 72px; right: 72px; top: 400px; bottom: 60px; background: var(--board-deep); border-radius: 26px; padding: 40px 56px; color: #fff; display: flex; flex-direction: column; justify-content: center; gap: 30px; }
+.chart h2 { font-size: 52px; font-weight: 800; letter-spacing: -.02em; }
+.chart p { font-size: 28px; font-weight: 600; color: #c9d6ff; }
+.axis { position: relative; height: 70px; margin-top: 10px; }
+.axis .line { position: absolute; left: 0; right: 0; top: 30px; height: 8px; border-radius: 4px; background: #3a5bb0; }
+.axis .tick { position: absolute; top: 18px; width: 4px; height: 32px; background: #6a86cc; }
+.axis .lbl { position: absolute; top: 56px; transform: translateX(-50%); font-family: var(--num); font-weight: 800; font-size: 20px; color: #a9bbe8; }
+.axis .mystery { position: absolute; top: -6px; transform: translateX(-50%); width: 70px; height: 70px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-size: 40px; font-weight: 800; }
+</style></head><body class="big">
+<div class="ticker">
+  <div class="pos"><i class="face" data-face="peter"></i><span class="name">Peter</span>600<span class="gain">+120</span></div>
+  <div class="pos"><i class="face" data-face="anna"></i><span class="name">Anna</span>552<span class="gain">+60</span></div>
+  <div class="pos"><i class="face" data-face="marek"></i><span class="name">Marek</span>350<span class="gain">+60</span></div>
+  <div class="pos"><i class="face" data-face="zuzka"></i><span class="name">Zuzka</span>338<span class="gain">+40</span></div>
+  <div class="pos"><i class="face" data-face="jana"></i><span class="name">Jana</span>290<span class="gain">+20</span></div>
+  <div class="pos"><i class="face" data-face="tomas"></i><span class="name">Tomas</span>150<span class="gain">+0</span></div>
+</div>
+<div class="qcard">
+  <h1>How many bitcoins will ever exist, in millions?</h1>
+  <div class="clock"><div class="tok">33</div><span>Q 6 / 12</span></div>
+  <div class="locked"><b>5</b> of 30 guesses in · closest wins 100</div>
+</div>
+<div class="chart">
+  <h2>Type your guess on your phone</h2>
+  <p>You can change it until the time runs out. Closest guess takes 100, then 90, 80…</p>
+  <div class="axis">
+    <div class="line"></div>
+    <i class="tick" style="left:0"></i><span class="lbl" style="left:0">0</span>
+    <i class="tick" style="left:25%"></i><span class="lbl" style="left:25%">25</span>
+    <i class="tick" style="left:50%"></i><span class="lbl" style="left:50%">50</span>
+    <i class="tick" style="left:75%"></i><span class="lbl" style="left:75%">75</span>
+    <i class="tick" style="left:100%"></i><span class="lbl" style="left:100%">100</span>
+  </div>
+</div>
+<script src="faces.js"></script>
+</body></html>

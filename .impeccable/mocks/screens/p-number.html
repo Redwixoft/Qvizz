@@ -1,0 +1,25 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Closest number – phone</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.guess { background: var(--card); border-radius: 22px; padding: 20px 18px 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 18px rgba(0,0,0,.3); }
+label { font-size: 18px; font-weight: 800; }
+.field { display: flex; align-items: center; gap: 10px; background: var(--track); border: 3px solid var(--ink); border-radius: 16px; padding: 10px 16px; }
+.field input { flex: 1; min-width: 0; border: 0; background: transparent; font: 800 64px var(--num); color: var(--ink); caret-color: var(--red); }
+.field input:focus { outline: none; }
+.field span { font-size: 22px; font-weight: 800; color: var(--ink-soft); }
+.btn { font-size: 22px; }
+.spacer { flex: 1; }
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; opacity: .9; }
+.keys i { font-style: normal; background: #2c4fa8; color: #fff; border-radius: 10px; padding: 12px 0; text-align: center; font: 800 24px var(--num); }
+</style></head><body class="phone">
+<div class="pq"><p>How many bitcoins will ever exist, in millions?</p><b class="tok">33</b></div>
+<div class="guess">
+  <label for="g">Your guess</label>
+  <div class="field"><input id="g" value="18" inputmode="decimal"><span>million</span></div>
+  <button class="btn plastic">Save guess</button>
+</div>
+<div class="pstatus">Saved. You can change it until the time runs out.</div>
+<div class="spacer"></div>
+<div class="me"><i class="face" data-face="anna"></i><span class="n">Anna</span><span class="s">552</span><span class="r">#2</span></div>
+<script src="faces.js"></script>
+</body></html>
