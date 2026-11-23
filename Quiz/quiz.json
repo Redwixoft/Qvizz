@@ -51,10 +51,10 @@
     {
       "type": "ClosestNumber",
       "text": "How many kilograms of fruit have we eaten since we moved into the offices in Jurkovičova tepláreň?",
+      "image": "/images/btcs-christmas-quiz/fruits.jpg",
       // TODO: 25 is only a placeholder - the real amount is still to be provided.
       "correctNumber": 25,
       "unit": "kg"
-      // TODO: picture to come; add e.g. "image": "/images/btcs-christmas-quiz/fruit.jpg",
     }
   ]
 }
