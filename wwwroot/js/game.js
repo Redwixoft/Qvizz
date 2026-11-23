@@ -433,8 +433,10 @@
   conn.onreconnected(() => { banner.classList.add('hidden'); identify(); });
   conn.onclose(() => { showBanner('Connection lost. Trying again…'); setTimeout(start, 2000); });
   async function start() {
-    try { await Festive.ready; await conn.start(); banner.classList.add('hidden'); await identify(); }
+    try { await conn.start(); banner.classList.add('hidden'); await identify(); }
     catch { showBanner('Connection lost. Trying again…'); setTimeout(start, 2000); }
   }
   start();
+  // The Christmas look loads alongside the connection; redraw once it is known (never mid-question, to keep a typed guess).
+  Festive.ready.then(on => { if (on && state && state.phase !== 'Question') { renderedKey = null; render(); } });
 })();

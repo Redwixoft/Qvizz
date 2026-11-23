@@ -30,7 +30,20 @@
     }
     return ok;
   }
-  $('#login').addEventListener('submit', e => { e.preventDefault(); login($('#password').value); });
+  // The password can be typed before the connection to the server is up: wait for it (up to 10 s) instead of failing.
+  async function connected() {
+    for (let i = 0; i < 50 && conn.state !== signalR.HubConnectionState.Connected; i++) await new Promise(r => setTimeout(r, 200));
+    return conn.state === signalR.HubConnectionState.Connected;
+  }
+  $('#login').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('#loginError').textContent = '';
+    if (!await connected()) {
+      $('#loginError').textContent = 'Can\'t reach the game server yet. Check your connection and try again.';
+      return;
+    }
+    login($('#password').value).catch(err => { $('#loginError').textContent = err.message; });
+  });
 
   // ---------- host controls ----------
   const call = (method, ...args) => conn.invoke(method, ...args).catch(err => toast(err.message));
@@ -419,7 +432,6 @@
   conn.onclose(() => setTimeout(start, 3000));
   async function start() {
     try {
-      await Festive.ready;
       await conn.start();
       const pw = sessionStorage.getItem(PW_KEY);
       if (pw) await login(pw);
@@ -428,4 +440,6 @@
     }
   }
   start();
+  // The Christmas look loads alongside the connection; redraw once it is known so hats and garland appear.
+  Festive.ready.then(on => { if (on && state) { renderedKey = null; render(); } });
 })();
