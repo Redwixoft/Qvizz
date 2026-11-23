@@ -101,8 +101,23 @@ const Qvizz = (() => {
    * The elements must be single-line with overflow hidden (see "player names" in app.css) so overflow can be measured.
    */
   const NAMES = '.piece.slot > b, .piece.tag > span, .sheet .nm-text, .place .nm, .award .nm, .trade .p b, .closest b, .players-panel .nm, .me .n, .remote-players .nm';
+  const fitted = new Set();   // every screen area that shows names, re-fitted when fonts load or the window changes
+  let refitQueued = false;
+  function refitAll() {
+    if (refitQueued) return;
+    refitQueued = true;
+    requestAnimationFrame(() => { refitQueued = false; fitted.forEach(r => r.isConnected ? fitNames(r) : fitted.delete(r)); });
+  }
+  // Names are measured in the font they are shown in. The web font usually arrives after the first screen is drawn
+  // (and is narrower or wider than the fallback), so measure again every time a font finishes loading.
+  document.fonts?.addEventListener('loadingdone', refitAll);
+  addEventListener('resize', refitAll);
+
   function fitNames(root) {
-    if (!root || !root.getClientRects().length) return;   // hidden: nothing to measure yet
+    if (!root) return;
+    fitted.add(root);
+    if (document.fonts?.status === 'loading') document.fonts.ready.then(refitAll);
+    if (!root.getClientRects().length) return;   // hidden: nothing to measure yet
     const over = el => el.scrollWidth > el.clientWidth;
     for (const el of root.querySelectorAll(NAMES)) {
       el.style.fontSize = '';
