@@ -10,7 +10,9 @@ public enum Phase
     Reveal,
     Leaderboard,
     Awards,
-    Finished
+    Finished,
+    /// <summary>First part of each question: only the question (and picture) are shown, answers come after.</summary>
+    Reading
 }
 
 /// <summary>A player's current (still changeable) answer to the running question.</summary>

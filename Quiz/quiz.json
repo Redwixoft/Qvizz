@@ -3,7 +3,24 @@
 // Images are paths under wwwroot, e.g. "/images/my-photo.jpg".
 {
   "name": "Crypto Party Quiz",
+  // Christmas look: snow (with the odd bitcoin), Santa hats, garland, gifts, holiday ticker in the lobby.
+  // Set to false to switch it all off.
+  "festive": true,
   "questions": [
+    {
+      "type": "MultipleChoice",
+      "text": "What day of the week is Christmas Eve this year?",
+      "image": "/images/btcs-christmas-quiz/christmas_eve.jpg",
+      "options": ["Monday", "Saturday", "Thursday", "Friday"],
+      "correctIndex": 2
+    },
+    {
+      "type": "MultipleChoice",
+      "text": "Which one is the real Bitcoin Suisse logo?",
+      "image": "/images/btcs-christmas-quiz/logo.jpg",
+      "options": ["Logo A", "Logo B", "Logo C", "Logo D"],
+      "correctIndex": 2
+    },
     {
       "type": "MultipleChoice",
       "text": "In 2010, what did someone famously buy for 10,000 bitcoin?",

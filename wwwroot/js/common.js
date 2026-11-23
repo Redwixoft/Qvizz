@@ -14,9 +14,11 @@ const Qvizz = (() => {
   /** A player's drawn face, ringed in their colour (or their initial until they've drawn). */
   function face(p, cls = '') {
     const style = `style="--pc:${colourOf(p)}"`;
-    return p.avatarUrl
+    const el = p.avatarUrl
       ? `<img class="face ${cls}" ${style} src="${esc(p.avatarUrl)}" alt="">`
       : `<span class="face blank ${cls}" ${style}><b>${esc((p.nickname || '?')[0].toUpperCase())}</b></span>`;
+    // Christmas look: every face wears a Santa hat, tilted a little differently per player.
+    return typeof Festive !== 'undefined' && Festive.on ?`<span class="hatted">${el}${Festive.hat(-22 + ((p.seat || 1) * 7) % 16)}</span>` : el;
   }
 
   function item(it) {

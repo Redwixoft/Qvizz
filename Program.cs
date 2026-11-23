@@ -42,6 +42,8 @@ app.MapGet("/", () => Results.Redirect("/game"));
 app.MapGet("/admin", (IWebHostEnvironment env) => Results.File(Path.Combine(env.WebRootPath, "admin.html"), "text/html"));
 app.MapGet("/game", (IWebHostEnvironment env) => Results.File(Path.Combine(env.WebRootPath, "game.html"), "text/html"));
 app.MapGet("/host", (IWebHostEnvironment env) => Results.File(Path.Combine(env.WebRootPath, "host.html"), "text/html"));
+// Look switches from quiz.json, read by the presenter and phone pages on load.
+app.MapGet("/look.json", (GameService game) => Results.Json(new { festive = game.Quiz.Festive }));
 app.MapGet("/avatar/{id:guid}", (Guid id, GameService game) =>
     game.GetAvatar(id) is { } png ? Results.File(png, "image/png") : Results.NotFound());
 

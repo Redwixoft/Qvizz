@@ -11,6 +11,8 @@ namespace Qvizz.Game;
 public sealed class GameOptions
 {
     public int CountdownSeconds { get; set; } = 5;
+    /// <summary>How long each question is shown on its own before the answers appear.</summary>
+    public int ReadingSeconds { get; set; } = 5;
     public int QuestionSeconds { get; set; } = 30;
     public int GroupingSeconds { get; set; } = 45;
     public string QuizFile { get; set; } = "Quiz/quiz.json";
@@ -166,6 +168,7 @@ public sealed class GameService
         // Resume timers (unless the host had paused). If a deadline passed while the server was down, the transition fires right away.
         if (_pausedRemaining is not null) return;
         if (_phase == Phase.Countdown) { _phaseVersion++; ScheduleTimer(() => BeginQuestion(0)); }
+        else if (_phase == Phase.Reading) { _phaseVersion++; ScheduleTimer(StartAnswering); }
         else if (_phase == Phase.Question) { _phaseVersion++; ScheduleTimer(EndQuestion); }
     }
 
@@ -178,7 +181,7 @@ public sealed class GameService
         Status = GameStatus.Active,
         Phase = _phase.ToString(),
         QuestionIndex = _questionIndex,
-        PhaseEndsAt = _phase is Phase.Countdown or Phase.Question ? _phaseEndsAt : null,
+        PhaseEndsAt = _phase is Phase.Countdown or Phase.Reading or Phase.Question ? _phaseEndsAt : null,
         PhaseLengthMs = (int)_phaseLength.TotalMilliseconds,
         GroupRightOrder = _groupRightOrder,
         AnswerSeq = _answerSeq,
@@ -443,7 +446,7 @@ public sealed class GameService
         await _gate.WaitAsync();
         try
         {
-            if (_phase is not (Phase.Countdown or Phase.Question) || _pausedRemaining is not null) return;
+            if (_phase is not (Phase.Countdown or Phase.Reading or Phase.Question) || _pausedRemaining is not null) return;
             var left = _phaseEndsAt - DateTimeOffset.UtcNow;
             _pausedRemaining = left < TimeSpan.Zero ? TimeSpan.Zero : left;
             _phaseVersion++;   // cancels the running timer
@@ -462,7 +465,7 @@ public sealed class GameService
             _pausedRemaining = null;
             _phaseEndsAt = DateTimeOffset.UtcNow + left;
             _phaseVersion++;
-            ScheduleTimer(_phase == Phase.Countdown ? () => BeginQuestion(0) : EndQuestion);
+            ScheduleTimer(_phase switch { Phase.Countdown => () => BeginQuestion(0), Phase.Reading => StartAnswering, _ => EndQuestion });
             TryEndEarly();   // everyone may have answered while paused
             SaveGame();
             await PushAllAsync();
@@ -625,6 +628,18 @@ public sealed class GameService
         }
         else _groupRightOrder = [];
 
+        // First the question on its own (no answers anywhere), then the answers and the answer timer.
+        if (_options.ReadingSeconds > 0)
+        {
+            EnterPhase(Phase.Reading, TimeSpan.FromSeconds(_options.ReadingSeconds));
+            ScheduleTimer(StartAnswering);
+        }
+        else StartAnswering();
+    }
+
+    private void StartAnswering()
+    {
+        var q = CurrentQuestion;
         var seconds = q.TimeLimitSeconds ?? (q.Type == QuestionType.Grouping ? _options.GroupingSeconds : _options.QuestionSeconds);
         EnterPhase(Phase.Question, TimeSpan.FromSeconds(seconds));
         ScheduleTimer(EndQuestion);
@@ -785,7 +800,7 @@ public sealed class GameService
     // ======================= Views & pushes =======================
 
     private int RemainingMs => _pausedRemaining is { } frozen ? (int)frozen.TotalMilliseconds
-        : _phase is Phase.Countdown or Phase.Question
+        : _phase is Phase.Countdown or Phase.Reading or Phase.Question
         ? Math.Max(0, (int)(_phaseEndsAt - DateTimeOffset.UtcNow).TotalMilliseconds)
         : 0;
 
@@ -801,6 +816,8 @@ public sealed class GameService
     {
         if (_questionIndex < 0 || _phase is Phase.Lobby or Phase.Countdown or Phase.Awards or Phase.Finished) return null;
         var q = CurrentQuestion;
+        // While the question is being read, the answers stay secret on every screen.
+        if (_phase == Phase.Reading) return new PublicQuestion(q.Type, q.Text, q.Image, [], [], [], q.Unit);
         return new PublicQuestion(
             q.Type, q.Text, q.Image, q.EffectiveOptions,
             q.Pairs.Select(p => p.Left).ToList(),
@@ -847,7 +864,7 @@ public sealed class GameService
         var rival = p.BoostRivalId is { } rid && _players.TryGetValue(rid, out var r) ? Summary(r) : null;
         return new PlayerView(
             _phase, Summary(p), _players.Count, _questionIndex, Quiz.Questions.Count, RemainingMs, (int)_phaseLength.TotalMilliseconds,
-            _phase == Phase.Question ? BuildPublicQuestion() : null,
+            _phase is Phase.Reading or Phase.Question ? BuildPublicQuestion() : null,
             p.CurrentAnswer is not null,
             _phase == Phase.Question ? p.CurrentAnswer?.Choice : null,
             _phase == Phase.Question ? p.CurrentAnswer?.Grouping : null,

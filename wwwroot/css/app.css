@@ -511,3 +511,74 @@ input { font: inherit; }
 .pic-wide .row { min-height: 74px; }
 .pic-wide .tf { order: 2; flex: none; height: 150px; }
 .pic-wide .cols { order: 2; flex: none; grid-auto-rows: minmax(58px, auto); }
+
+/* ---------- Christmas look ("festive": true in quiz.json; festive.js adds .festive to <html>) ---------- */
+:root { --hat: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 96'%3E%3Cpath d='M14 70 C18 34 44 8 76 10 C96 12 108 30 104 52 C98 40 88 34 80 36 C88 46 92 58 92 70 Z' fill='%23d93a28'/%3E%3Cpath d='M80 36 C88 46 92 58 92 70 L70 70 C72 56 76 44 80 36Z' fill='%23000' opacity='.14'/%3E%3Ccircle cx='104' cy='56' r='12' fill='%23fff'/%3E%3Crect x='4' y='62' width='98' height='24' rx='12' fill='%23fff'/%3E%3Cpath d='M12 80 Q52 88 96 80' fill='none' stroke='%23dbe4fb' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E"); }
+
+/* snow: block-chain flakes over the whole window, behind everything; a coin or a bitcoin now and then */
+.fx-snow { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.festive .fit, .festive .phone, .festive .login { position: relative; z-index: 1; }
+.festive .fit { position: fixed; }
+.fx-snow .fl { position: absolute; top: -60px; animation: fx-fall linear infinite; will-change: transform; }
+.fx-snow.calm .fl:nth-of-type(2n) { display: none; }
+.fx-snow .coin { position: absolute; top: -70px; animation: fx-rare linear infinite; will-change: transform; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+.fx-snow .coin svg { display: block; width: 100%; height: 100%; animation: fx-flip linear infinite; }
+.fx-snow::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 56px; background:
+  radial-gradient(120px 40px at 10% 100%, #3a5bb0 98%, transparent), radial-gradient(160px 44px at 34% 100%, #2c4fa6 98%, transparent),
+  radial-gradient(140px 38px at 58% 100%, #3a5bb0 98%, transparent), radial-gradient(180px 46px at 84% 100%, #2c4fa6 98%, transparent),
+  linear-gradient(transparent 70%, #3a5bb0 70%); opacity: .8; }
+@keyframes fx-fall { from { transform: translate3d(0, 0, 0) rotate(0); } to { transform: translate3d(var(--dx), calc(100vh + 120px), 0) rotate(var(--rot)); } }
+@keyframes fx-rare { 0% { transform: translate3d(0, 0, 0); } 38% { transform: translate3d(var(--dx), calc(100vh + 140px), 0); } 100% { transform: translate3d(var(--dx), calc(100vh + 140px), 0); } }
+@keyframes fx-flip { to { transform: rotateY(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .fx-snow .fl { top: var(--y); }
+  .fx-snow .coin { display: none; }
+}
+
+/* Santa hats: on faces (face() wraps them), wordmarks and the timer */
+.hatted { position: relative; display: inline-grid; flex: none; }
+.hatted .hat { position: absolute; left: -16%; top: -40%; width: 78%; height: auto; aspect-ratio: 120 / 96; transform: rotate(var(--hat-tilt, -16deg)); pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
+.who .hat, .pin .hat, .closest .hat, .rest .hat, .players-panel .hat, .remote-players .hat, .remote-card .hat { display: none; }
+.festive .join-center .mark, .festive .p-mark, .festive .mark-sm, .festive .clock .tok { position: relative; }
+.festive .join-center .mark::before, .festive .p-mark::before, .festive .mark-sm::before {
+  content: ''; position: absolute; left: -.2em; top: -.46em; width: .82em; aspect-ratio: 120 / 96; background: var(--hat) center / contain no-repeat; transform: rotate(-20deg); pointer-events: none; }
+.festive .join-center .mark, .festive .phone .p-mark { display: inline-block; }
+.festive .join-center .mark { left: auto; top: auto; }
+.festive .clock .tok::before { content: ''; position: absolute; left: -24%; top: -36%; width: 74%; aspect-ratio: 120 / 96; background: var(--hat) center / contain no-repeat; transform: rotate(-22deg); pointer-events: none; }
+
+/* presenter decorations, in stage coordinates and behind the screen's content */
+.fx-stage { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.fx-stage .chain { position: absolute; inset: 0; width: 1440px; height: 900px; overflow: visible; }
+.fx-stage .chain rect { fill: none; stroke: #a9bdf0; stroke-width: 2.5; }
+.fx-stage .blk { position: absolute; width: 42px; height: 42px; animation: fx-confirm 4.2s linear infinite; filter: brightness(.75) saturate(.6); }
+@keyframes fx-confirm { 0%, 70%, 100% { filter: brightness(.75) saturate(.6); } 8%, 30% { filter: brightness(1.25) saturate(1.1) drop-shadow(0 0 10px rgba(255,255,255,.7)); } }
+.fx-stage .gifts { position: absolute; bottom: 64px; width: 150px; height: 168px; overflow: visible; }
+.fx-stage .gifts.left { left: 10px; }
+.fx-stage .gifts.right { right: 10px; transform: scaleX(-1); }
+.lobby ~ .fx-ticker, .fx-ticker { position: absolute; left: 0; right: 0; bottom: 0; height: 58px; background: var(--track); color: var(--ink); display: flex; align-items: center; overflow: hidden; font-size: 24px; font-weight: 600; box-shadow: 0 -6px 14px rgba(0,0,0,.25); z-index: 2; }
+.fx-ticker .lbl { flex: none; height: 100%; display: grid; place-items: center; padding: 0 22px; background: var(--ink); color: #fff; font-weight: 800; z-index: 1; }
+.fx-ticker .run { display: flex; white-space: nowrap; padding-left: 28px; animation: crawl 36s linear infinite; }
+.fx-ticker .it { margin-right: 54px; display: inline-flex; align-items: center; gap: 10px; }
+.fx-ticker .it b { font-weight: 800; }
+.fx-ticker .it > span { display: inline-flex; align-items: center; gap: 4px; font-family: var(--num); font-weight: 800; }
+.fx-ticker .it svg { width: 16px; height: 16px; }
+.fx-ticker .up { color: var(--up); } .fx-ticker .down { color: var(--down); }
+@keyframes crawl { to { transform: translateX(-50%); } }
+.festive .join-center { bottom: 58px; gap: 10px; }
+.festive .join-center > * { flex-shrink: 0; }
+.festive .join-center .join .qr { width: 292px; height: 292px; }
+
+/* ---------- reading time: the question alone before the answers appear ---------- */
+.answers-soon { position: relative; flex: none; min-height: 464px; background: var(--board-deep); border-radius: 26px; display: grid; place-items: center; overflow: hidden; }
+.answers-soon p { color: var(--on-board-soft); font-size: 34px; font-weight: 600; text-align: center; padding: 0 40px; }
+.answers-soon .drain { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: var(--board-line); transform-origin: left; animation: drain linear both; }
+@keyframes drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.stage:has(.paused-overlay) .drain { animation-play-state: paused; }
+.q-side .answers-soon { flex: 1; min-height: 0; }
+.q-side .answers-soon p { font-size: 26px; }
+.pic-wide .answers-soon { order: 2; flex: none; min-height: 0; height: 180px; }
+/* phone */
+.panel.read { display: flex; flex-direction: column; gap: 8px; }
+.panel.read small { font-family: var(--num); font-weight: 800; font-size: 15px; color: var(--ink-soft); }
+.panel.read h2 { font-size: 26px; font-weight: 800; line-height: 1.2; text-wrap: balance; }
+.read-cd { font-size: 120px; line-height: 1; }

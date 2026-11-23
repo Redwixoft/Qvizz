@@ -48,6 +48,7 @@
     switch (s.phase) {
       case 'Lobby': return { act: 'StartQuiz', label: 'Start the game', disabled: !s.players.length };
       case 'Countdown':
+      case 'Reading':
       case 'Question': return s.paused ? { act: 'Resume', label: 'Resume' } : { act: 'Pause', label: 'Pause', cls: 'light' };
       case 'Reveal': return { act: 'Next', label: last ? 'Final results' : 'Show standings' };
       case 'Leaderboard': return { act: 'Next', label: 'Next question' };
@@ -61,6 +62,7 @@
     return {
       Lobby: `Lobby · ${s.players.length} player${s.players.length === 1 ? '' : 's'}`,
       Countdown: 'Countdown to question 1',
+      Reading: `${q} · reading time`,
       Question: q,
       Reveal: `${q} · answer shown`,
       Leaderboard: `Standings after question ${s.questionIndex + 1}`,
@@ -70,11 +72,11 @@
   }
 
   function detail(s) {
-    if (s.phase === 'Question' || s.phase === 'Countdown') {
+    if (s.phase === 'Question' || s.phase === 'Countdown' || s.phase === 'Reading') {
       const connected = s.players.filter(p => p.connected).length;
       return `${s.question ? `<p class="q">${esc(s.question.text)}</p>` : ''}
         <div class="timer-row"><b class="tok ${s.paused ? 'paused' : ''}" id="timer"></b>
-          <span>${s.paused ? 'Paused' : s.phase === 'Question' ? `<b class="num">${s.answeredCount}</b> of ${connected} answered` : 'Get ready…'}</span></div>`;
+          <span>${s.paused ? 'Paused' : s.phase === 'Question' ? `<b class="num">${s.answeredCount}</b> of ${connected} answered` : s.phase === 'Reading' ? 'Answers appear soon' : 'Get ready…'}</span></div>`;
     }
     if (s.phase === 'Reveal' && s.reveal) {
       const r = s.reveal;
@@ -107,9 +109,9 @@
       ${s.phase !== 'Finished' && s.phase !== 'Lobby' ? `<button class="btn light plastic quiet" data-act="NewGame"
         data-confirm="End this game and open a new lobby? Everyone has to join again. This game is kept in the archive.">End game &amp; new lobby</button>` : ''}`;
 
-    if (s.phase === 'Countdown' || s.phase === 'Question') {
+    if (s.phase === 'Countdown' || s.phase === 'Reading' || s.phase === 'Question') {
       if (s.paused) { const t = $('#timer'); if (t) t.textContent = Math.ceil(s.remainingMs / 1000); }
-      else if (s.phase === 'Countdown') countdown.start(s.remainingMs, secs => { const t = $('#timer'); if (t) t.textContent = secs; });
+      else if (s.phase !== 'Question') countdown.start(s.remainingMs, secs => { const t = $('#timer'); if (t) t.textContent = secs; });
       else countdown.start(s.remainingMs, secs => renderTimer($('#timer'), secs));
     }
   }

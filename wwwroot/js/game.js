@@ -65,6 +65,7 @@
     switch (s.phase) {
       case 'Lobby': return showLobby(s);
       case 'Countdown': return showCountdown(s);
+      case 'Reading': return showReading(s);
       case 'Question': return showQuestion(s);
       case 'Reveal':
       case 'Leaderboard': return showResult(s);
@@ -185,6 +186,13 @@
   function showCountdown(s) {
     app.innerHTML = `${meChip(s)}<div class="center"><h2 class="on-board" style="font-size:40px">Get ready!</h2><div id="cd" class="num on-board" style="font-size:140px;line-height:1"></div></div>`;
     countdown.start(s.remainingMs, secs => $('#cd').textContent = secs);
+  }
+
+  // ---------- reading: the question alone, answers follow on their own ----------
+  function showReading(s) {
+    app.innerHTML = `<div class="panel read"><small>Question ${s.questionIndex + 1} of ${s.questionCount}</small><h2>${esc(s.question.text)}</h2></div>
+      <div class="center"><p class="soft">Answers appear in</p><div id="cd" class="num on-board read-cd"></div></div>${meChip(s)}`;
+    countdown.start(s.remainingMs, secs => { const t = $('#cd'); if (t) t.textContent = secs; });
   }
 
   // ---------- question ----------
@@ -364,7 +372,7 @@
   // so freeze or restart the clock in place and show a notice.
   let wasPaused = false;
   function syncPause(s) {
-    const timed = s.phase === 'Question' || s.phase === 'Countdown';
+    const timed = s.phase === 'Question' || s.phase === 'Countdown' || s.phase === 'Reading';
     const paused = timed && s.paused;
     $('#pauseNote').classList.toggle('hidden', !paused);
     const t = $('#timer') || $('#cd');
@@ -425,7 +433,7 @@
   conn.onreconnected(() => { banner.classList.add('hidden'); identify(); });
   conn.onclose(() => { showBanner('Connection lost. Trying again…'); setTimeout(start, 2000); });
   async function start() {
-    try { await conn.start(); banner.classList.add('hidden'); await identify(); }
+    try { await Festive.ready; await conn.start(); banner.classList.add('hidden'); await identify(); }
     catch { showBanner('Connection lost. Trying again…'); setTimeout(start, 2000); }
   }
   start();

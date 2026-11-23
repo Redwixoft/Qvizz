@@ -70,6 +70,9 @@ public sealed class QuizDefinition
         : !string.IsNullOrWhiteSpace(Title) ? Title.Trim() : "Qvizz";
     public List<Question> Questions { get; set; } = [];
 
+    /// <summary>Christmas look on the big screen and phones: snow, Santa hats, garland, gifts, holiday ticker.</summary>
+    public bool Festive { get; set; }
+
     public static QuizDefinition Load(string path)
     {
         var json = File.ReadAllText(path);

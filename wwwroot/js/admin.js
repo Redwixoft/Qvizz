@@ -75,26 +75,28 @@
     const key = `${s.phase}:${s.questionIndex}:${s.paused}`;
     if (key === renderedKey && s.phase !== 'Lobby') {
       const meta = $('#answered');
-      if (meta) meta.innerHTML = lockedText(s);
+      if (meta && s.phase === 'Question') meta.innerHTML = lockedText(s);
       return;
     }
     renderedKey = key;
     countdown.stop();
-    const asked = s.phase === 'Question' || s.phase === 'Reveal';
+    const asked = s.phase === 'Reading' || s.phase === 'Question' || s.phase === 'Reveal';
     stage.classList.toggle('centered', asked);
     stage.classList.toggle('with-image', asked && !!s.question?.image);
     stage.classList.remove('pic-wide');
+    Festive.calm(asked);
     switch (s.phase) {
-      case 'Lobby': stage.innerHTML = lobby(s); break;
+      case 'Lobby': stage.innerHTML = Festive.stage('lobby') + lobby(s); break;
       case 'Countdown': countdownScreen(s); break;
+      case 'Reading': readingScreen(s); break;
       case 'Question': questionScreen(s); break;
       case 'Reveal': revealScreen(s); break;
-      case 'Leaderboard': stage.innerHTML = standings(s); break;
+      case 'Leaderboard': stage.innerHTML = Festive.stage('standings') + standings(s); break;
       case 'Awards': stage.innerHTML = awards(s); break;
-      case 'Finished': stage.innerHTML = podium(s); break;
+      case 'Finished': stage.innerHTML = Festive.stage('podium') + podium(s); break;
     }
     // Host paused the timer: freeze the clock and say so on the big screen.
-    if (s.paused && (s.phase === 'Question' || s.phase === 'Countdown')) {
+    if (s.paused && (s.phase === 'Question' || s.phase === 'Countdown' || s.phase === 'Reading')) {
       countdown.stop();
       const t = $('#timer') || $('#cd');
       if (t) { t.textContent = Math.ceil(s.remainingMs / 1000); t.classList.remove('danger'); }
@@ -108,11 +110,11 @@
   // Up to 40 players show their drawn faces; above that everyone becomes a compact name tag.
   const CARD = { left: 470, right: 970 };          // the centre column, kept clear
   const AREA = { top: 36, bottom: 864, edge: 34 };
-  function seatSpots(tileW, tileH) {
+  function seatSpots(tileW, tileH, bottom = AREA.bottom) {
     const spots = [];
     for (const [x0, x1] of [[AREA.edge, CARD.left - 16], [CARD.right + 16, 1440 - AREA.edge]]) {
-      const cols = Math.floor((x1 - x0) / tileW), rows = Math.floor((AREA.bottom - AREA.top) / tileH);
-      const cw = (x1 - x0) / cols, rh = (AREA.bottom - AREA.top) / rows;
+      const cols = Math.floor((x1 - x0) / tileW), rows = Math.floor((bottom - AREA.top) / tileH);
+      const cw = (x1 - x0) / cols, rh = (bottom - AREA.top) / rows;
       for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++)
         spots.push({ x: x0 + cw * (c + .5), y: AREA.top + rh * (r + .5) });
     }
@@ -133,7 +135,8 @@
       : n <= 40 ? { w: 112, h: 116, face: 64, name: 17, tags: false }
       : n <= 68 ? { w: 196, h: 48, name: 20, tags: true }
       : { w: 140, h: 40, name: 16, tags: true };
-    const spots = seatSpots(tier.w, tier.h);
+    // the Christmas ticker takes the bottom 58px, so seats stop above it
+    const spots = seatSpots(tier.w, tier.h, Festive.on ? 828 : AREA.bottom);
     const pieces = bySeat.map((p, i) => {
       const spot = spots[i % spots.length], j = wobble(p.seat);
       const style = `left:${spot.x + (j - .5) * tier.w * .18}px;top:${spot.y + (wobble(p.seat + 99) - .5) * tier.h * .18}px;` +
@@ -226,6 +229,16 @@
       <div class="meta" id="answered">${meta}</div>
       <div class="clock">${side}</div>
     </section>`;
+  }
+
+  // ----- reading: the question and picture alone for a few seconds, the answers come after -----
+  // The timer token counts down the reading time; the space where the answers will land waits for them.
+  function readingScreen(s) {
+    const clock = `<div class="tok" id="timer"></div><span>Q ${s.questionIndex + 1} / ${s.questionCount}</span>`;
+    const secs = Math.max(0, s.remainingMs) / 1000;
+    const waiting = `<div class="answers-soon"><p>Read the question. The answers are coming…</p><i class="drain" style="animation-duration:${secs}s"></i></div>`;
+    stage.innerHTML = layout(s, card(s, clock, 'Answers in a moment') + waiting);
+    countdown.start(s.remainingMs, n => { const t = $('#timer'); if (t) t.textContent = n; });
   }
 
   // ----- question -----
@@ -406,6 +419,7 @@
   conn.onclose(() => setTimeout(start, 3000));
   async function start() {
     try {
+      await Festive.ready;
       await conn.start();
       const pw = sessionStorage.getItem(PW_KEY);
       if (pw) await login(pw);
