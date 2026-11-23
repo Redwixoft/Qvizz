@@ -16,6 +16,7 @@
     if (s.phase !== 'Lobby') drawing = false;
     else if (!s.me.avatarUrl && (renderedKey === null || renderedKey === 'join')) drawing = true; // just joined: draw a face
     render();
+    Qvizz.fitNames(app);   // names are never cut off
     syncPause(s);
   });
 
@@ -86,7 +87,7 @@
         <p class="soft">${esc(message || 'Take a seat at the table')}</p>
         <form class="panel" id="joinForm">
           <label for="nick">Your nickname</label>
-          <input id="nick" maxlength="20" autocomplete="nickname" autocapitalize="words" enterkeyhint="go" required>
+          <input id="nick" maxlength="30" autocomplete="nickname" autocapitalize="words" enterkeyhint="go" required>
           <div class="error" id="joinError" role="alert"></div>
           <button class="btn plastic" type="submit">Join the game</button>
         </form>

@@ -94,5 +94,32 @@ const Qvizz = (() => {
     setTimeout(() => t.remove(), 2600);
   }
 
-  return { LETTERS, PLAYER_COLOURS, colourOf, esc, $, face, item, optClass, fmt, ICON, move, Countdown, renderTimer, connect, toast };
+  /**
+   * Player names are never cut off. A name that doesn't fit its box gets a smaller font, only as much as needed;
+   * one that still doesn't fit at 65% of its size wraps between words instead. A single word too long even for its
+   * own line shrinks a little more (to 45%), and only then may break inside the word.
+   * The elements must be single-line with overflow hidden (see "player names" in app.css) so overflow can be measured.
+   */
+  const NAMES = '.piece.slot > b, .piece.tag > span, .sheet .nm-text, .place .nm, .award .nm, .trade .p b, .closest b, .players-panel .nm, .me .n, .remote-players .nm';
+  function fitNames(root) {
+    if (!root || !root.getClientRects().length) return;   // hidden: nothing to measure yet
+    const over = el => el.scrollWidth > el.clientWidth;
+    for (const el of root.querySelectorAll(NAMES)) {
+      el.style.fontSize = '';
+      el.classList.remove('nm-wrap', 'nm-break');
+      if (!over(el)) continue;
+      const base = parseFloat(getComputedStyle(el).fontSize);
+      let min = Math.round(base * .65);
+      let size = Math.max(min, Math.floor(base * el.clientWidth / el.scrollWidth));
+      el.style.fontSize = size + 'px';
+      while (over(el) && size > min) el.style.fontSize = --size + 'px';
+      if (!over(el)) continue;
+      el.classList.add('nm-wrap');                   // wrap between words
+      min = Math.round(base * .45);
+      while (over(el) && size > min) el.style.fontSize = --size + 'px';
+      if (over(el)) el.classList.add('nm-break');   // one very long word: break inside it rather than cut it
+    }
+  }
+
+  return { LETTERS, PLAYER_COLOURS, colourOf, esc, $, face, item, optClass, fmt, ICON, move, Countdown, renderTimer, connect, toast, fitNames };
 })();

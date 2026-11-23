@@ -108,6 +108,7 @@
           <button type="button" data-kick="${pl.id}" data-name="${esc(pl.nickname)}">Remove</button></li>`).join('') || '<li>Nobody has joined yet.</li>'}</ul>` : ''}
       ${s.phase !== 'Finished' && s.phase !== 'Lobby' ? `<button class="btn light plastic quiet" data-act="NewGame"
         data-confirm="End this game and open a new lobby? Everyone has to join again. This game is kept in the archive.">End game &amp; new lobby</button>` : ''}`;
+    Qvizz.fitNames(app);   // names are never cut off
 
     if (s.phase === 'Countdown' || s.phase === 'Reading' || s.phase === 'Question') {
       if (s.paused) { const t = $('#timer'); if (t) t.textContent = Math.ceil(s.remainingMs / 1000); }

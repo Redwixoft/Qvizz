@@ -24,6 +24,7 @@
       $('#login').classList.add('hidden');
       $('#app').classList.remove('hidden');
       fit();
+      if (state) fitNames();   // the screen may have been drawn while still hidden
     } else {
       sessionStorage.removeItem(PW_KEY);
       $('#loginError').textContent = 'That password is not right. Try again.';
@@ -73,6 +74,7 @@
       <li>${face(p)}<span class="nm">${esc(p.nickname)}</span><span class="num">${fmt(p.score)}</span>
         <button type="button" data-kick="${p.id}" data-name="${esc(p.nickname)}">Remove</button></li>`).join('');
     panel.innerHTML = `<h2>Players (${state.players.length})</h2>${rows ? `<ul>${rows}</ul>` : '<p>Nobody has joined yet.</p>'}`;
+    Qvizz.fitNames(panel);
   }
 
   // ---------- rendering ----------
@@ -108,6 +110,7 @@
       case 'Awards': stage.innerHTML = awards(s); break;
       case 'Finished': stage.innerHTML = Festive.stage('podium') + podium(s); break;
     }
+    fitNames();
     // Host paused the timer: freeze the clock and say so on the big screen.
     if (s.paused && (s.phase === 'Question' || s.phase === 'Countdown' || s.phase === 'Reading')) {
       countdown.stop();
@@ -156,7 +159,7 @@
         `--tilt:${(j - .5) * (tier.tags ? 6 : 10)}deg;--pc:${colourOf(p)};--face:${tier.face}px;--name:${tier.name}px;width:${tier.w - 14}px`;
       return tier.tags
         ? `<div class="piece tag ${cls(p)}" style="${style}"><i></i><span>${esc(p.nickname)}</span>${kick(p)}</div>`
-        : `<div class="piece slot ${cls(p)}" style="${style};height:${tier.h - 14}px">${face(p)}<b>${esc(p.nickname)}</b>${p.avatarUrl ? '' : '<small>drawing…</small>'}${kick(p)}</div>`;
+        : `<div class="piece slot ${cls(p)}" style="${style};min-height:${tier.h - 14}px">${face(p)}<b>${esc(p.nickname)}</b>${p.avatarUrl ? '' : '<small>drawing…</small>'}${kick(p)}</div>`;
     }).join('');
     s.players.forEach(p => seen.add(p.id));
 
@@ -180,6 +183,11 @@
       ${pieces}
     </div>`;
   }
+
+  // Player names are always shown in full on every screen (shrunk, then wrapped if needed: Qvizz.fitNames).
+  const fitNames = () => Qvizz.fitNames(stage);
+  // Measurements depend on the web font: fit again once it has loaded.
+  document.fonts?.ready.then(() => { if (state) fitNames(); });
 
   // QR code for the join address (qrcode-generator, loaded in admin.html).
   function qrSvg(url) {

@@ -221,7 +221,7 @@ public sealed class GameService
     public async Task<(Guid? PlayerId, string? Error)> JoinAsync(string connectionId, string nickname)
     {
         nickname = (nickname ?? "").Trim();
-        if (nickname.Length is 0 or > 20) return (null, "Nickname must be 1-20 characters.");
+        if (nickname.Length is 0 or > 30) return (null, "Nickname must be 1-30 characters.");
 
         await _gate.WaitAsync();
         try

@@ -582,3 +582,45 @@ input { font: inherit; }
 .panel.read small { font-family: var(--num); font-weight: 800; font-size: 15px; color: var(--ink-soft); }
 .panel.read h2 { font-size: 26px; font-weight: 800; line-height: 1.2; text-wrap: balance; }
 .read-cd { font-size: 120px; line-height: 1; }
+
+/* player names: never cut off. Qvizz.fitNames (common.js) shrinks a name that doesn't fit, and wraps it only as a last resort.
+   Each one stays single-line with overflow hidden so the overflow can be measured; no ellipsis anywhere. */
+.piece.slot > b, .piece.tag > span, .sheet .nm-text, .place .nm, .award .nm, .trade .p b, .closest b, .players-panel .nm, .me .n, .remote-players .nm {
+  white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.piece.slot > b, .piece.slot > small { flex-shrink: 0; max-width: 100%; }
+.sheet .nm-text { min-width: 0; flex: 1 1 auto; }
+.nm-wrap { white-space: normal !important; line-height: 1.05; }   /* state classes set by Qvizz.fitNames: always win */
+.nm-break { overflow-wrap: anywhere !important; }
+.trade .p > div { min-width: 0; flex: 1; }
+.piece.slot > b.nm-wrap, .place .nm.nm-wrap, .award .nm.nm-wrap { text-align: center; }
+.phone h2 { overflow-wrap: anywhere; }
+
+/* awards: a smaller hat, with room above the face so it never covers the award's title or blurb */
+.award .hatted { margin-top: 32px; }
+.award-grid.few .award .hatted { margin-top: 46px; }
+.award .hatted .hat { width: 62%; left: -10%; top: -27%; }
+/* awards, 5+ cards in two rows: nothing in a card may be squeezed away; a slightly tighter card makes room for the hat */
+.award > * { flex-shrink: 0; }
+.award-grid:not(.few) .award { padding: 14px 12px 14px; gap: 4px; }
+.award-grid:not(.few) .award h2 { font-size: 25px; line-height: 1.1; }
+.award-grid:not(.few) .award .face { width: 80px; height: 80px; margin: 4px 0 0; }
+.award-grid:not(.few) .award .hatted { margin-top: 26px; }
+.award-grid:not(.few) .award .nm { font-size: 26px; }
+/* podium: places 4-7 wrap onto a second row instead of running under the New game button */
+.rest { flex-wrap: wrap; row-gap: 8px; }
+/* phone: the big face (waiting screen, final results) gets a smaller hat and room above it,
+   so the hat never covers the name or the points shown just above the face */
+.hatted:has(> .pawn) { margin-top: 44px; }
+.hatted:has(> .pawn) .hat { width: 60%; left: -8%; top: -26%; }
+
+/* matching with pictures only on one side (e.g. flags): the picture fills its row, centred, as large as it fits */
+.it:has(> img:only-child) { justify-content: center; padding: 8px; }
+.it > img:only-child { height: 100%; max-height: 100%; width: auto; max-width: 100%; object-fit: contain; box-shadow: 0 0 0 2px rgba(20,33,61,.12); }
+.cell:has(> img:only-child) { justify-content: center; padding: 6px; }
+.cell > img:only-child { height: 100%; max-height: 100%; width: auto; max-width: 100%; object-fit: contain; box-shadow: 0 0 0 2px rgba(20,33,61,.12); }
+/* ...and the rows keep their share of the screen instead of growing to the picture's own size */
+.cols:has(> .it > img:only-child) { grid-auto-rows: minmax(0, 1fr); flex: 1 1 0; min-height: 0; }
+.cols .it:has(> img:only-child) { overflow: hidden; }
+.pairs:has(.cell > img:only-child) { min-height: 0; }
+.pairs:has(.cell > img:only-child) .pair { flex: 1 1 0; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+.pair .cell:has(> img:only-child) { min-height: 0; overflow: hidden; }
