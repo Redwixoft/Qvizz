@@ -239,7 +239,7 @@
 
   function lockedText(s) {
     const t = s.question?.type;
-    const verb = t === 'Grouping' ? 'arranging' : t === 'ClosestNumber' ? 'guesses in' : 'locked in';
+    const verb = t === 'Grouping' || t === 'Ordering' ? 'arranging' : t === 'ClosestNumber' ? 'guesses in' : 'locked in';
     return `<b>${s.answeredCount}</b> of ${s.players.filter(p => p.connected).length} ${verb}`;
   }
 
@@ -262,6 +262,18 @@
     countdown.start(s.remainingMs, n => { const t = $('#timer'); if (t) t.textContent = n; });
   }
 
+  // ----- ordering: the items beside a rail whose two ends say what top and bottom mean -----
+  // While the question runs the items are in the shuffled starting order (no place numbers: it isn't an answer);
+  // on the reveal they stand in the right order, numbered, each with how many players put it in its place.
+  function ladder(q, items, r) {
+    const rail = q.topLabel || q.bottomLabel
+      ? `<div class="rail"><b>${esc(q.topLabel || '')}</b><i aria-hidden="true"></i><b>${esc(q.bottomLabel || '')}</b></div>` : '';
+    const rows = items.map((it, i) => `
+      <div class="it ${r ? 'ok' : ''}">${r ? `<span class="n">${i + 1}</span>` : ''}${item(it)}${r && r.answeredPlayers
+        ? `<em class="hits" title="players who put it here"><tt>${r.placedRight[i]}</tt>/${r.answeredPlayers}</em>` : ''}</div>`).join('');
+    return `<div class="ladder ${rail ? '' : 'no-rail'}">${rail}<div class="rungs" style="--n:${items.length}">${rows}</div></div>`;
+  }
+
   // ----- question -----
   function questionScreen(s) {
     const q = s.question;
@@ -276,6 +288,8 @@
     } else if (q.type === 'Grouping') {
       body = `<div class="cols">${q.groupLeft.map((l, i) => `
         <div class="it left"><span class="n">${i + 1}</span>${item(l)}</div><div class="it">${item(q.groupRight[i])}</div>`).join('')}</div>`;
+    } else if (q.type === 'Ordering') {
+      body = ladder(q, q.orderItems);
     } else {
       body = `<div class="chart"><h2>Type your guess on your phone</h2>
         <p>You can change it until the time runs out. The closest guess takes 100 points, then 90, 80…</p></div>`;
@@ -314,10 +328,13 @@
       meta = !r.answeredPlayers ? 'Nobody answered this one' : `<b>${r.correctPlayers}</b> of ${r.answeredPlayers} matched every pair${firstNames ? ` · first: ${firstNames}` : ''}`;
       body = `<div class="cols">${r.correctPairs.map((p, i) => `
         <div class="it left ok"><span class="n">${i + 1}</span>${item(p.left)}</div><div class="it">${item(p.right)}</div>`).join('')}</div>`;
+    } else if (q.type === 'Ordering') {
+      meta = !r.answeredPlayers ? 'Nobody answered this one' : `<b>${r.correctPlayers}</b> of ${r.answeredPlayers} got the whole order right${firstNames ? ` · first: ${firstNames}` : ''}`;
+      body = ladder(q, r.correctOrder, r);
     } else {
       const best = r.closestGuesses[0];
       const winners = r.closestGuesses.filter(g => best && g.points === best.points).map(g => esc(g.nickname));
-      meta = best ? `Closest: <strong>${winners.join(', ')}</strong> guessed ${fmt(best.guess)} · +${best.points}` : 'Nobody guessed this time';
+      meta = best ? `Closest: <strong>${winners.join(', ')}</strong> guessed ${fmt(best.guess)} (${offText(best.guess, r.correctNumber)}) · +${best.points}` : 'Nobody guessed this time';
       body = numberReveal(q, r);
     }
     stage.innerHTML = layout(s, card(s, nextButton(s), meta) + body);
@@ -325,6 +342,17 @@
     requestAnimationFrame(() => requestAnimationFrame(() =>
       stage.querySelectorAll('.row[data-v] .vol').forEach(v => v.style.width = v.parentElement.dataset.v + '%')));
   }
+
+  // How far a guess is from the right number: "3 over", "2.5 under" or "spot on".
+  const offBy = (guess, correct) => Math.round((guess - correct) * 1e6) / 1e6;
+  const offText = (guess, correct) => {
+    const d = offBy(guess, correct);
+    return d === 0 ? 'spot on' : `${fmt(Math.abs(d))} ${d > 0 ? 'over' : 'under'}`;
+  };
+  const offTag = (guess, correct) => {
+    const d = offBy(guess, correct);
+    return `<i class="off ${d === 0 ? 'exact' : ''}">${d === 0 ? 'spot on' : `<tt>${fmt(Math.abs(d))}</tt> ${d > 0 ? 'over' : 'under'}`}</i>`;
+  };
 
   function numberReveal(q, r) {
     const values = [...r.allGuesses, r.correctNumber];
@@ -345,7 +373,7 @@
     const pile = best ? Math.min(7, Math.max(0, ...[-1, 0, 1].map(o => stack[Math.round(at(best.guess) / 1.5) + o] || 0))) : 0;
     return `<div class="chart">
       <div class="answer-big"><b>${fmt(r.correctNumber)}</b><span>${esc(q.unit || '')}</span></div>
-      <ol class="closest">${r.closestGuesses.map(g => `<li>${face({ ...g })}<b>${esc(g.nickname)}</b><span>${fmt(g.guess)}</span><em>+${g.points}</em></li>`).join('')}</ol>
+      <ol class="closest">${r.closestGuesses.map(g => `<li>${face({ ...g })}<b>${esc(g.nickname)}</b><span>${fmt(g.guess)}</span>${offTag(g.guess, r.correctNumber)}<em>+${g.points}</em></li>`).join('')}</ol>
       <div class="axis"><div class="line"></div>${labels.join('')}
         <div class="target" style="left:${at(r.correctNumber)}%"></div>${dots}
         ${best ? `<div class="pin" style="left:${at(best.guess)}%;bottom:${56 + pile * 16}px">${face({ ...best })}<span>${fmt(best.guess)}</span></div>` : ''}

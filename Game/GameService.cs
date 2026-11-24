@@ -315,8 +315,8 @@ public sealed class GameService
 
     public Task<string?> AnswerGroupingAsync(string connectionId, int[] order) =>
         SubmitAsync(connectionId, q =>
-            q.Type == QuestionType.Grouping && order is not null && order.Length == q.Pairs.Count &&
-            order.OrderBy(x => x).SequenceEqual(Enumerable.Range(0, q.Pairs.Count))
+            q.Type is QuestionType.Grouping or QuestionType.Ordering && order is not null && order.Length == q.Pieces &&
+            order.OrderBy(x => x).SequenceEqual(Enumerable.Range(0, q.Pieces))
                 ? new SubmittedAnswer { Grouping = order }
                 : null);
 
@@ -619,10 +619,10 @@ public sealed class GameService
         }
 
         var q = CurrentQuestion;
-        if (q.Type == QuestionType.Grouping)
+        if (q.Type is QuestionType.Grouping or QuestionType.Ordering)
         {
-            var n = q.Pairs.Count;
-            // Shuffle so that no pair starts out correct: an untouched board scores nothing.
+            var n = q.Pieces;
+            // Shuffle so that no pair (or ordering item) starts out correct: an untouched board scores nothing.
             do { _groupRightOrder = Enumerable.Range(0, n).OrderBy(_ => Random.Shared.Next()).ToArray(); }
             while (_groupRightOrder.Where((v, i) => v == i).Any());
         }
@@ -640,7 +640,7 @@ public sealed class GameService
     private void StartAnswering()
     {
         var q = CurrentQuestion;
-        var seconds = q.TimeLimitSeconds ?? (q.Type == QuestionType.Grouping ? _options.GroupingSeconds : _options.QuestionSeconds);
+        var seconds = q.TimeLimitSeconds ?? (q.Type is QuestionType.Grouping or QuestionType.Ordering ? _options.GroupingSeconds : _options.QuestionSeconds);
         EnterPhase(Phase.Question, TimeSpan.FromSeconds(seconds));
         ScheduleTimer(EndQuestion);
     }
@@ -657,6 +657,7 @@ public sealed class GameService
         var optionCounts = new int[q.EffectiveOptions.Count];
         var closest = new List<ClosestGuess>();
         var correctPlayers = 0;
+        var placedRight = new int[q.Type == QuestionType.Ordering ? q.Pieces : 0];
 
         if (q.Type == QuestionType.ClosestNumber)
         {
@@ -685,12 +686,19 @@ public sealed class GameService
             {
                 var a = p.CurrentAnswer!;
                 (int pts, string detail, bool correct) r;
-                if (q.Type == QuestionType.Grouping)
+                if (q.Type is QuestionType.Grouping or QuestionType.Ordering)
                 {
-                    var good = a.Grouping!.Select((pos, left) => _groupRightOrder[pos] == left).Count(x => x);
+                    // Grouping: Grouping[left] = display position of its right side. Ordering: Grouping[place] = the
+                    // displayed item put in that place. Either way a piece is right when the shuffle maps it back.
+                    var right = a.Grouping!.Select((shown, slot) => _groupRightOrder[shown] == slot).ToArray();
+                    var good = right.Count(x => x);
                     goodPairs[p.Id] = good;
-                    if (Scoring.KeepsStreakOnMatching(good, q.Pairs.Count)) keeps.Add(p.Id);
-                    r = (good * Scoring.GroupingPointsPerPair, $"{good} of {q.Pairs.Count} pairs correct.", good == q.Pairs.Count);
+                    if (q.Type == QuestionType.Ordering)
+                        for (var slot = 0; slot < right.Length; slot++) if (right[slot]) placedRight[slot]++;
+                    if (Scoring.KeepsStreakOnMatching(good, q.Pieces)) keeps.Add(p.Id);
+                    r = q.Type == QuestionType.Grouping
+                        ? (good * Scoring.GroupingPointsPerPair, $"{good} of {q.Pieces} pairs correct.", good == q.Pieces)
+                        : (good * Scoring.OrderingPointsPerItem, good == q.Pieces ? "Perfect order!" : $"{good} of {q.Pieces} in the right place.", good == q.Pieces);
                     if (good > 0) bonusInOrder.Add(p);
                 }
                 else
@@ -758,6 +766,7 @@ public sealed class GameService
         _reveal = new RevealInfo(
             q.EffectiveCorrectIndex, optionCounts, q.CorrectNumber, closest, allGuesses,
             q.Type == QuestionType.Grouping ? q.Pairs : [],
+            q.Type == QuestionType.Ordering ? q.Items : [], placedRight,
             firstCorrect, correctPlayers, answered.Count);
 
         EnterPhase(Phase.Reveal, TimeSpan.Zero);
@@ -817,12 +826,15 @@ public sealed class GameService
         if (_questionIndex < 0 || _phase is Phase.Lobby or Phase.Countdown or Phase.Awards or Phase.Finished) return null;
         var q = CurrentQuestion;
         // While the question is being read, the answers stay secret on every screen.
-        if (_phase == Phase.Reading) return new PublicQuestion(q.Type, q.Text, q.Image, [], [], [], q.Unit);
+        if (_phase == Phase.Reading) return new PublicQuestion(q.Type, q.Text, q.Image, [], [], [], q.Unit, [], null, null);
+        var shuffled = q.Pieces > 0 && _groupRightOrder.Length == q.Pieces;
         return new PublicQuestion(
             q.Type, q.Text, q.Image, q.EffectiveOptions,
             q.Pairs.Select(p => p.Left).ToList(),
-            _groupRightOrder.Length == q.Pairs.Count ? _groupRightOrder.Select(i => q.Pairs[i].Right).ToList() : [],
-            q.Unit);
+            shuffled && q.Type == QuestionType.Grouping ? _groupRightOrder.Select(i => q.Pairs[i].Right).ToList() : [],
+            q.Unit,
+            shuffled && q.Type == QuestionType.Ordering ? _groupRightOrder.Select(i => q.Items[i]).ToList() : [],
+            q.TopLabel, q.BottomLabel);
     }
 
     private IReadOnlyList<AwardView> AwardViews() =>
@@ -895,6 +907,9 @@ public sealed class GameService
                     (answered && r!.Choice is int c ? Opt(c) : "No answer", Opt(q.EffectiveCorrectIndex)),
                 QuestionType.ClosestNumber =>
                     (answered && r!.Number is double n ? Num(n) : "No answer", Num(q.CorrectNumber!.Value)),
+                QuestionType.Ordering =>
+                    (answered ? $"{r!.GoodPairs} of {q.Pieces} in the right place" : "No answer",
+                     q.Items.All(it => !string.IsNullOrWhiteSpace(it.Text)) ? string.Join(" › ", q.Items.Select(it => it.Text!.Trim())) : null),
                 _ => (answered ? $"{r!.GoodPairs} of {q.Pairs.Count} pairs right" : "No answer", (string?)null)
             };
             items.Add(new RecapItem(i + 1, q.Text, yours, correct, r?.Points ?? 0, r?.Correct ?? false, answered));

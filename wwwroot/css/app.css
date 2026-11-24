@@ -537,7 +537,9 @@ input { font: inherit; }
 
 /* Santa hats: on faces (face() wraps them), wordmarks and the timer */
 .hatted { position: relative; display: inline-grid; flex: none; }
-.hatted .hat { position: absolute; left: -16%; top: -40%; width: 78%; height: auto; aspect-ratio: 120 / 96; transform: rotate(var(--hat-tilt, -16deg)); pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
+/* hat size (--hw) and how far its pose reaches (--hk) can be scaled per place; the pose itself comes from Festive.hat */
+.hatted { --hw: 78%; --hk: 1; }
+.hatted .hat { position: absolute; width: var(--hw); left: calc(50% - var(--hw) / 2 + var(--hdx, -27%) * var(--hk)); top: calc(var(--hy, -40%) * var(--hk)); height: auto; aspect-ratio: 120 / 96; transform: rotate(var(--hr, -16deg)) scaleX(var(--hf, 1)); pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
 .who .hat, .pin .hat, .closest .hat, .rest .hat, .players-panel .hat, .remote-players .hat, .remote-card .hat { display: none; }
 .festive .join-center .mark, .festive .p-mark, .festive .mark-sm, .festive .clock .tok { position: relative; }
 .festive .join-center .mark::before, .festive .p-mark::before, .festive .mark-sm::before {
@@ -598,7 +600,7 @@ input { font: inherit; }
 /* awards: a smaller hat, with room above the face so it never covers the award's title or blurb */
 .award .hatted { margin-top: 32px; }
 .award-grid.few .award .hatted { margin-top: 46px; }
-.award .hatted .hat { width: 62%; left: -10%; top: -27%; }
+.award .hatted { --hw: 62%; --hk: .68; }
 /* awards, 5+ cards in two rows: nothing in a card may be squeezed away; a slightly tighter card makes room for the hat */
 .award > * { flex-shrink: 0; }
 .award-grid:not(.few) .award { padding: 14px 12px 14px; gap: 4px; }
@@ -610,8 +612,8 @@ input { font: inherit; }
 .rest { flex-wrap: wrap; row-gap: 8px; }
 /* phone: the big face (waiting screen, final results) gets a smaller hat and room above it,
    so the hat never covers the name or the points shown just above the face */
-.hatted:has(> .pawn) { margin-top: 44px; }
-.hatted:has(> .pawn) .hat { width: 60%; left: -8%; top: -26%; }
+.hatted:has(> .pawn) { margin-top: 58px; }
+.hatted:has(> .pawn) { --hw: 60%; --hk: .66; }
 
 /* matching with pictures only on one side (e.g. flags): the picture fills its row, centred, as large as it fits */
 .it:has(> img:only-child) { justify-content: center; padding: 8px; }
@@ -624,3 +626,67 @@ input { font: inherit; }
 .pairs:has(.cell > img:only-child) { min-height: 0; }
 .pairs:has(.cell > img:only-child) .pair { flex: 1 1 0; min-height: 0; grid-template-rows: minmax(0, 1fr); }
 .pair .cell:has(> img:only-child) { min-height: 0; overflow: hidden; }
+
+/* closest-number reveal: how far each guess was from the answer ("3 over", "2 under", "spot on") */
+.closest .off { flex: none; font-style: normal; font-weight: 600; font-size: .85em; color: var(--ink-soft); white-space: nowrap; }
+.closest .off tt { font-family: var(--num); font-weight: 800; color: var(--ink); }
+.closest .off.exact { font-weight: 800; color: var(--green); }
+.closest { width: 520px; }
+
+/* ---------- ordering: items beside a rail whose two ends say what top and bottom mean ---------- */
+.ladder { flex: 1; min-height: 0; display: grid; grid-template-columns: 210px 1fr; gap: 26px; }
+.ladder.no-rail { grid-template-columns: 1fr; }
+.rail { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 0; }
+.rail b { background: var(--track); color: var(--ink); border-radius: 14px; padding: 10px 14px; font-size: 24px; font-weight: 800; line-height: 1.15; text-align: center; box-shadow: 0 6px 12px rgba(0,0,0,.25); max-width: 100%; overflow-wrap: anywhere; }
+.rail b:empty { display: none; }
+/* a double-headed arrow between the two notes */
+.rail i { position: relative; flex: 1; width: 8px; min-height: 30px; margin: 18px 0; border-radius: 4px; background: var(--on-board-soft); }
+.rail i::before, .rail i::after { content: ''; position: absolute; left: 50%; transform: translateX(-50%); border: 14px solid transparent; }
+.rail i::before { bottom: 100%; border-bottom: 16px solid var(--on-board-soft); border-top-width: 0; }
+.rail i::after { top: 100%; border-top: 16px solid var(--on-board-soft); border-bottom-width: 0; }
+.rungs { display: grid; grid-template-rows: repeat(var(--n), minmax(0, 1fr)); gap: 12px; min-height: 0; }
+.rungs .it { overflow: hidden; }
+.rungs .it img { max-height: 100%; height: 100%; width: auto; object-fit: contain; }
+.rungs .it:has(> img:only-child) img { height: 100%; }
+.rungs .hits { margin-left: auto; flex: none; font-style: normal; font-size: 22px; font-weight: 700; color: var(--ink-soft); }
+.rungs .hits tt { font-family: var(--num); font-size: 30px; font-weight: 800; color: var(--green); }
+.q-side .ladder { grid-template-columns: 150px 1fr; gap: 16px; }
+.q-side .ladder.no-rail { grid-template-columns: 1fr; }
+.q-side .rail b { font-size: 18px; padding: 8px 10px; }
+.q-side .rungs { gap: 10px; }
+.q-side .rungs .it { font-size: 22px; padding: 8px 16px; }
+.pic-wide .ladder { order: 2; flex: none; height: 300px; }
+
+/* phone */
+.order { flex: 1; min-height: 0; display: grid; grid-template-columns: 82px 1fr; gap: 8px; }
+.order.no-rail { grid-template-columns: 1fr; }
+.order .rail { gap: 6px; }
+.order .rail b { font-size: 13px; padding: 6px 6px; border-radius: 10px; }
+.order .rail i { width: 6px; margin: 12px 0; }
+.order .rail i::before, .order .rail i::after { border-width: 10px; }
+.order .rail i::before { border-bottom-width: 12px; border-top-width: 0; }
+.order .rail i::after { border-top-width: 12px; border-bottom-width: 0; }
+.olist { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.orow { flex: 1 1 0; min-height: 0; display: flex; align-items: stretch; gap: 8px; }
+.orow .n { flex: none; align-self: center; width: 34px; height: 34px; border-radius: 50%; background: var(--track); color: var(--ink); display: grid; place-items: center; font-family: var(--num); font-size: 18px; font-weight: 800; }
+.orow .cell { flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
+.orow .cell img { max-height: 100%; }
+.pic-wide .ladder:has(.it img) { height: 400px; }
+
+/* answers with a photo AND a name (people): the photo fills the row's height, the name sits beside it */
+.cols:has(> .it > img + span) { grid-auto-rows: minmax(0, 1fr); flex: 1 1 0; min-height: 0; }
+.it:has(> img + span) { overflow: hidden; padding-top: 6px; padding-bottom: 6px; }
+.it > img:has(+ span) { flex: none; height: 100%; max-height: 100%; width: auto; aspect-ratio: 1; object-fit: cover; border-radius: 12px; }
+.rungs .it > img:has(+ span) { height: 100%; }
+/* phone: the photo on top, the name under it, in the matching row's left cell; beside the name in an ordering row */
+.pairs:has(.cell > img + span) { min-height: 0; }
+.pairs:has(.cell > img + span) .pair { flex: 1 1 0; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+.cell:has(> img + span) { min-height: 0; overflow: hidden; gap: 4px 10px; padding: 5px; }
+.cell.l:has(> img + span) { flex-direction: column; font-size: 13px; line-height: 1.1; }
+.cell > img:has(+ span) { flex: 1 1 0; min-height: 0; height: 100%; max-height: none; width: auto; max-width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+.orow .cell > img:has(+ span) { flex: none; }
+.cols:has(> .it.left > img + span) { grid-template-columns: 1.3fr 1fr; gap: 10px 36px; }
+.it:has(> img + span) { padding-top: 4px; padding-bottom: 4px; }
+.pair:has(> .cell.l > img + span) { grid-template-columns: 52% 1fr; }
+.pair .cell.l:has(> img + span) { flex-direction: row; justify-content: flex-start; text-align: left; font-size: 14px; }
+.pair .cell.l > img:has(+ span) { flex: none; }

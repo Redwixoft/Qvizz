@@ -216,6 +216,13 @@
       if (!grouping || grouping.qi !== s.questionIndex)
         grouping = { qi: s.questionIndex, order: s.myGrouping ? [...s.myGrouping] : q.groupRight.map((_, i) => i), selected: null };
       body = `<p class="pstatus">Tap two answers on the right to swap them.</p><div class="pairs" id="pairs"></div>`;
+    } else if (q.type === 'Ordering') {
+      // same "tap two to swap" as matching; grouping.order[place] = which shown item stands in that place
+      if (!grouping || grouping.qi !== s.questionIndex)
+        grouping = { qi: s.questionIndex, order: s.myGrouping ? [...s.myGrouping] : q.orderItems.map((_, i) => i), selected: null };
+      const rail = q.topLabel || q.bottomLabel
+        ? `<div class="rail"><b>${esc(q.topLabel || '')}</b><i aria-hidden="true"></i><b>${esc(q.bottomLabel || '')}</b></div>` : '';
+      body = `<p class="pstatus">Tap two items to swap them.</p><div class="order ${rail ? '' : 'no-rail'}">${rail}<div class="olist" id="olist"></div></div>`;
     } else {
       body = `<form class="panel" id="numForm">
           <label for="num">Your guess</label>
@@ -232,6 +239,7 @@
       send('AnswerChoice', +b.dataset.i);
     });
     if (q.type === 'Grouping') renderPairs(q);
+    if (q.type === 'Ordering') renderOrder(q);
     if (q.type === 'ClosestNumber') {
       const input = $('#num');
       if (s.myNumber != null) input.value = s.myNumber;
@@ -257,11 +265,11 @@
     const note = $('#savedNote'); if (note) note.hidden = !s.answered;
     if (!status) return;
     if (!s.answered) {
-      status.textContent = q.type === 'Grouping' ? 'Your arrangement saves automatically.'
+      status.textContent = q.type === 'Grouping' || q.type === 'Ordering' ? 'Your answer saves automatically.'
         : q.type === 'ClosestNumber' ? 'Type your guess; it saves automatically.'
         : 'Tap your answer.';
     } else {
-      status.textContent = q.type === 'Grouping' || q.type === 'ClosestNumber'
+      status.textContent = q.type === 'Grouping' || q.type === 'Ordering' || q.type === 'ClosestNumber'
         ? 'Saved. You can change it until the time runs out.'
         : 'Answer saved. Tap another to change it.';
     }
@@ -297,6 +305,26 @@
       [o[a], o[row]] = [o[row], o[a]];
       send('AnswerGrouping', [...o]);
       renderPairs(q);
+      animateSwap(cells(), before, a, row);
+    });
+  }
+
+  function renderOrder(q) {
+    const list = $('#olist');
+    list.innerHTML = grouping.order.map((shown, place) => `
+      <div class="orow"><span class="n">${place + 1}</span>
+        <button type="button" class="cell m ${grouping.selected === place ? 'sel' : ''}" data-row="${place}">${item(q.orderItems[shown])}</button></div>`).join('');
+    list.querySelectorAll('.m').forEach(b => b.onclick = () => {
+      const row = +b.dataset.row;
+      if (grouping.selected === null) { grouping.selected = row; renderOrder(q); return; }
+      const o = grouping.order, a = grouping.selected;
+      grouping.selected = null;
+      if (a === row) { renderOrder(q); return; }
+      const cells = () => [...$('#olist').querySelectorAll('.m')];
+      const before = cells().map(c => c.getBoundingClientRect());
+      [o[a], o[row]] = [o[row], o[a]];
+      send('AnswerGrouping', [...o]);
+      renderOrder(q);
       animateSwap(cells(), before, a, row);
     });
   }

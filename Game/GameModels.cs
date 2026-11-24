@@ -93,7 +93,11 @@ public sealed record PublicQuestion(
     IReadOnlyList<string> Options,
     IReadOnlyList<QuizItem> GroupLeft,
     IReadOnlyList<QuizItem> GroupRight,
-    string? Unit);
+    string? Unit,
+    /// <summary>Ordering: the items shuffled (the starting order on every phone) and the notes for the two ends.</summary>
+    IReadOnlyList<QuizItem> OrderItems,
+    string? TopLabel,
+    string? BottomLabel);
 
 public sealed record ClosestGuess(string Nickname, string? AvatarUrl, int Seat, double Guess, int Points);
 
@@ -104,6 +108,9 @@ public sealed record RevealInfo(
     IReadOnlyList<ClosestGuess> ClosestGuesses,
     IReadOnlyList<double> AllGuesses,
     IReadOnlyList<GroupPair> CorrectPairs,
+    /// <summary>Ordering: the items in the right order, and how many players put each one in its right place.</summary>
+    IReadOnlyList<QuizItem> CorrectOrder,
+    int[] PlacedRight,
     IReadOnlyList<PlayerSummary> FirstCorrect,
     int CorrectPlayers,
     int AnsweredPlayers);

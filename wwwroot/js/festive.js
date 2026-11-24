@@ -27,8 +27,21 @@ const Festive = (() => {
   const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
 
   /** A Santa hat to put on a face (sized and placed by CSS: .hatted .hat). */
-  function hat(tilt = -16) {
-    return `<svg class="hat" viewBox="0 0 120 96" style="--hat-tilt:${tilt}deg" aria-hidden="true"><use href="#fx-hat"/></svg>`;
+  // Every player wears their hat a little differently: on top, slid to the left or right, tilted, or mirrored.
+  // dx: sideways shift and y: height, both as % of the face; r: tilt; f: -1 mirrors the hat (its tip then droops left).
+  const POSES = [
+    { dx: -27, y: -40, r: -16, f: 1 },   // tilted, on the left
+    { dx: 0, y: -48, r: -3, f: 1 },      // straight on top
+    { dx: 27, y: -40, r: 16, f: -1 },    // tilted, on the right
+    { dx: -14, y: -45, r: -8, f: -1 },   // slightly left, mirrored
+    { dx: 0, y: -48, r: 4, f: -1 },      // straight on top, mirrored
+    { dx: 14, y: -45, r: 9, f: 1 },      // slightly right
+    { dx: -22, y: -42, r: -22, f: -1 },  // jaunty, on the left, mirrored
+  ];
+  /** A Santa hat for a face; the pose follows the player's seat, so it stays the same for them all game. */
+  function hat(seat = 1) {
+    const p = POSES[(Math.max(1, seat) - 1) % POSES.length];
+    return `<svg class="hat" viewBox="0 0 120 96" style="--hdx:${p.dx}%;--hy:${p.y}%;--hr:${p.r}deg;--hf:${p.f}" aria-hidden="true"><use href="#fx-hat"/></svg>`;
   }
 
   // ----- snow over the whole window: mostly flakes, now and then a bitcoin or an ethereum coin -----

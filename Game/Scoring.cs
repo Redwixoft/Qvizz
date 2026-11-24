@@ -5,12 +5,14 @@ public static class Scoring
     public const int MultipleChoicePoints = 100;
     public const int TrueFalsePoints = 80;
     public const int GroupingPointsPerPair = 20;
+    /// <summary>Ordering: points for each item in its right place.</summary>
+    public const int OrderingPointsPerItem = 20;
 
     /// <summary>Extra points per question while a player is on a streak of this many or more.</summary>
     public const int StreakBonus = 5;
     public const int StreakFrom = 3;
 
-    /// <summary>Matching keeps the streak with at least half the pairs right (2 of 4, 3 of 5).</summary>
+    /// <summary>Matching and ordering keep the streak with at least half the pieces right (2 of 4, 3 of 5).</summary>
     public static bool KeepsStreakOnMatching(int goodPairs, int pairs) => goodPairs >= (pairs + 1) / 2;
 
     /// <summary>Closest-number keeps the streak for the better half of all players (at least the closest one).</summary>

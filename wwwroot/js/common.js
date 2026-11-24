@@ -18,7 +18,7 @@ const Qvizz = (() => {
       ? `<img class="face ${cls}" ${style} src="${esc(p.avatarUrl)}" alt="">`
       : `<span class="face blank ${cls}" ${style}><b>${esc((p.nickname || '?')[0].toUpperCase())}</b></span>`;
     // Christmas look: every face wears a Santa hat, tilted a little differently per player.
-    return typeof Festive !== 'undefined' && Festive.on ?`<span class="hatted">${el}${Festive.hat(-22 + ((p.seat || 1) * 7) % 16)}</span>` : el;
+    return typeof Festive !== 'undefined' && Festive.on ?`<span class="hatted">${el}${Festive.hat(p.seat || 1)}</span>` : el;
   }
 
   function item(it) {

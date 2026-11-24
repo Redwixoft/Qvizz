@@ -9,7 +9,9 @@ public enum QuestionType
     MultipleChoice,
     TrueFalse,
     Grouping,
-    ClosestNumber
+    ClosestNumber,
+    /// <summary>Put the items in the right order, top to bottom.</summary>
+    Ordering
 }
 
 /// <summary>Text and/or image. Used for grouping items.</summary>
@@ -45,6 +47,12 @@ public sealed class Question
     // Grouping: 4 or 5 pairs, each Left belongs with its Right.
     public List<GroupPair> Pairs { get; set; } = [];
 
+    // Ordering: 3-6 items listed in the RIGHT order, top to bottom (players get them shuffled).
+    public List<QuizItem> Items { get; set; } = [];
+    /// <summary>Ordering: notes shown beside the list's two ends, e.g. "Longest in the company" / "Newest".</summary>
+    public string? TopLabel { get; set; }
+    public string? BottomLabel { get; set; }
+
     // ClosestNumber
     public double? CorrectNumber { get; set; }
     public string? Unit { get; set; }
@@ -53,6 +61,10 @@ public sealed class Question
     [JsonIgnore]
     public IReadOnlyList<string> EffectiveOptions =>
         Type == QuestionType.TrueFalse ? ["True", "False"] : Options;
+
+    /// <summary>How many pieces players move around: grouping pairs or ordering items.</summary>
+    [JsonIgnore]
+    public int Pieces => Type switch { QuestionType.Grouping => Pairs.Count, QuestionType.Ordering => Items.Count, _ => 0 };
 
     [JsonIgnore]
     public int EffectiveCorrectIndex =>
@@ -103,6 +115,9 @@ public sealed class QuizDefinition
                     break;
                 case QuestionType.Grouping:
                     if (q.Pairs.Count is < 2 or > 6) throw new InvalidOperationException($"{where}: needs 2-6 pairs");
+                    break;
+                case QuestionType.Ordering:
+                    if (q.Items.Count is < 3 or > 6) throw new InvalidOperationException($"{where}: needs 3-6 items");
                     break;
                 case QuestionType.ClosestNumber:
                     if (q.CorrectNumber is null) throw new InvalidOperationException($"{where}: correctNumber is required");

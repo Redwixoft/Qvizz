@@ -55,6 +55,52 @@
       // TODO: 25 is only a placeholder - the real amount is still to be provided.
       "correctNumber": 25,
       "unit": "kg"
+    },
+    {
+      "type": "MultipleChoice",
+      "text": "How do you say Christmas in French?",
+      "image": "/images/btcs-christmas-quiz/noel.jpg",
+      "options": ["Cadeau", "Noël", "Bonheur", "Crismaux"],
+      "correctIndex": 1
+    },
+    {
+      "type": "MultipleChoice",
+      "text": "Which sport does our CEO Michal Štípek do?",
+      "image": "/images/btcs-christmas-quiz/michal.jpg",
+      "options": ["Basketball", "Pétanque", "Ski jumping", "MMA fighting"],
+      "correctIndex": 3
+    },
+    {
+      "type": "Grouping",
+      "text": "Match each colleague with their country of origin.",
+      "pairs": [
+        { "left": { "image": "/images/btcs-christmas-quiz/geovanna.png",  "text": "Geovanna" },          "right": { "text": "Ecuador" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/anna.png",      "text": "Anna" },              "right": { "text": "Ukraine" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/michaela.jpg",  "text": "Michaela Buckova" },   "right": { "text": "Czech Republic" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/magdalena.jpg", "text": "Magdalena Linkova" }, "right": { "text": "Bulgaria" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/lujza.png",     "text": "Lujza Petrikova" },    "right": { "text": "Slovakia" } }
+      ]
+    },
+    {
+      "type": "MultipleChoice",
+      "text": "What do people in Japan usually eat for Christmas?",
+      "image": "/images/btcs-christmas-quiz/kfc.jpg",
+      "options": ["KFC", "Pizza Hut", "McDonald's", "Burger King"],
+      "correctIndex": 0
+    },
+    {
+      "type": "Ordering",
+      "text": "Order these colleagues by how long they have been with the company.",
+      "topLabel": "Longest in the company",
+      "bottomLabel": "Newest",
+      // the right order, longest first (players get them shuffled)
+      "items": [
+        { "image": "/images/btcs-christmas-quiz/marcel.jpg",   "text": "Marcel" },
+        { "image": "/images/btcs-christmas-quiz/milan.png",    "text": "Milan" },
+        { "image": "/images/btcs-christmas-quiz/petra.png",    "text": "Petra" },
+        { "image": "/images/btcs-christmas-quiz/nada.jpg",     "text": "Nadežda" },
+        { "image": "/images/btcs-christmas-quiz/kristina.jpg", "text": "Kristína" }
+      ]
     }
   ]
 }

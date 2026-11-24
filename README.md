@@ -55,7 +55,9 @@ a live copy in memory so phones get instant responses.
 
 Edit `Quiz/quiz.json` and restart. Put images in `wwwroot/images/` and reference them as `/images/file.jpg`.
 Question types: `MultipleChoice` (4 options + `correctIndex`), `TrueFalse` (`correctBool`),
-`Grouping` (`pairs` of `left`/`right`, each with `text` and/or `image`), `ClosestNumber` (`correctNumber`, optional `unit`).
+`Grouping` (`pairs` of `left`/`right`, each with `text` and/or `image`), `ClosestNumber` (`correctNumber`, optional `unit`),
+`Ordering` (3-6 `items`, each with `text` and/or `image`, listed in the RIGHT order top to bottom; players get them
+shuffled; optional `topLabel` / `bottomLabel` notes beside the two ends, e.g. "Longest in the company" / "Newest").
 Any question can override its time with `timeLimitSeconds`.
 Any question can have a picture: `"image": "/images/file.jpg"`. It shows large on the presenter screen only
 (landscape pictures between the question and the answers, portrait ones beside them). Use JPG/PNG/WebP around 1600px wide.
@@ -75,12 +77,12 @@ players' drawn faces as pawns) with answers laid out like trading positions and 
 
 ## Scoring
 
-- Multiple choice: 100, true/false: 80, grouping: 20 per correct pair.
-- Speed bonus for correct answers, in order of answering: 20, 18, 16, 15, 14 … 1, then 0. For grouping, anyone with at least one correct pair qualifies.
+- Multiple choice: 100, true/false: 80, grouping: 20 per correct pair, ordering: 20 per item in its right place.
+- Speed bonus for correct answers, in order of answering: 20, 18, 16, 15, 14 … 1, then 0. For grouping and ordering, anyone with at least one correct piece qualifies.
 - Closest number: 100, 90, 80, 70, 65, 60 … 5 by distance, then 0. Equal distances share the better place.
-- Streak: a question is "kept" with a correct answer; on matching with at least half the pairs right (2 of 4, 3 of 5);
+- Streak: a question is "kept" with a correct answer; on matching / ordering with at least half the pieces right (2 of 4, 3 of 5);
   on closest number by being in the better half of all players (at least the closest). From the 3rd kept question in a
   row, each kept question earns +5 and the player gets a 🔥 on the standings. A miss or no answer resets the streak.
 - Answers can be changed until the time runs out; the time of the last change counts for the speed bonus.
-- Multiple choice / true-false end as soon as every connected player has answered. Grouping and closest-number
+- Multiple choice / true-false end as soon as every connected player has answered. Grouping, ordering and closest-number
   always run the full time, and whatever is on the player's phone at that moment is scored.
