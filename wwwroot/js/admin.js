@@ -336,12 +336,16 @@
       meta = !r.answeredPlayers ? 'Nobody answered this one' : `<b>${r.correctPlayers}</b> of ${r.answeredPlayers} got the whole order right${firstNames ? ` · first: ${firstNames}` : ''}`;
       body = ladder(q, r.correctOrder, r);
     } else {
+      // Several players can be equally close with different guesses (2 over and 2 under): each gets their own guess.
       const best = r.closestGuesses[0];
-      const winners = r.closestGuesses.filter(g => best && g.points === best.points).map(g => esc(g.nickname));
-      meta = best ? `Closest: <strong>${winners.join(', ')}</strong> guessed ${fmt(best.guess)} (${offText(best.guess, r.correctNumber)}) · +${best.points}` : 'Nobody guessed this time';
+      const winners = r.closestGuesses.filter(g => best && g.points === best.points);
+      const byGuess = [...new Set(winners.map(g => g.guess))].map(v =>
+        `<strong>${winners.filter(g => g.guess === v).map(g => esc(g.nickname)).join(', ')}</strong> guessed ${fmt(v)} (${offText(v, r.correctNumber)})`);
+      meta = best ? `Closest: ${byGuess.join('; ')} · +${best.points}${winners.length > 1 ? ' each' : ''}` : 'Nobody guessed this time';
       body = numberReveal(q, r);
     }
     stage.innerHTML = layout(s, card(s, nextButton(s), meta) + body);
+    if (q.type === 'ClosestNumber') spreadPins();
     // grow the vote-volume bars once the rows are on screen
     requestAnimationFrame(() => requestAnimationFrame(() =>
       stage.querySelectorAll('.row[data-v] .vol').forEach(v => v.style.width = v.parentElement.dataset.v + '%')));
@@ -368,21 +372,52 @@
     const labels = [];
     for (let v = lo; v <= hi + step / 2; v += step) labels.push(`<span class="lbl" style="left:${at(v)}%">${fmt(v)}</span>`);
     const best = r.closestGuesses[0];
+    // Everyone in the closest list gets their face on the line (the winners, tied ones included, in gold);
+    // faces that would overlap stack upwards. Every other guess is a dot.
+    const pinned = r.closestGuesses.map(g => ({ g, x: at(g.guess), win: g.points === best.points }));
+    const rest = [...r.allGuesses];
+    for (const p of pinned) { const i = rest.indexOf(p.g.guess); if (i >= 0) rest.splice(i, 1); }
     const stack = {};
-    const dots = r.allGuesses.filter((g, i) => !(best && g === best.guess && i === r.allGuesses.indexOf(best.guess))).map(g => {
+    const dots = rest.map(g => {
       const k = Math.round(at(g) / 1.5); stack[k] = (stack[k] || 0) + 1;
       return `<i class="dot" style="left:${at(g)}%;bottom:${40 + stack[k] * 16}px"></i>`;
     }).join('');
-    // the winner's face sits on top of any pile of dots at its spot
-    const pile = best ? Math.min(7, Math.max(0, ...[-1, 0, 1].map(o => stack[Math.round(at(best.guess) / 1.5) + o] || 0))) : 0;
+    // a face sits on top of any pile of dots at its spot
+    const pile = x => Math.min(7, Math.max(0, ...[-1, 0, 1].map(o => stack[Math.round(x / 1.5) + o] || 0)));
+    const pins = pinned.map(p => `<div class="pin ${p.win ? 'win' : 'other'}" style="left:${p.x}%;bottom:${56 + pile(p.x) * 16}px" data-base="${56 + pile(p.x) * 16}">${face({ ...p.g })}<span>${fmt(p.g.guess)}</span></div>`).join('');
     return `<div class="chart">
       <div class="answer-big"><b>${fmt(r.correctNumber)}</b><span>${esc(q.unit || '')}</span></div>
       <ol class="closest">${r.closestGuesses.map(g => `<li>${face({ ...g })}<b>${esc(g.nickname)}</b><span>${fmt(g.guess)}</span>${offTag(g.guess, r.correctNumber)}<em>+${g.points}</em></li>`).join('')}</ol>
       <div class="axis"><div class="line"></div>${labels.join('')}
         <div class="target" style="left:${at(r.correctNumber)}%"></div>${dots}
-        ${best ? `<div class="pin" style="left:${at(best.guess)}%;bottom:${56 + pile * 16}px">${face({ ...best })}<span>${fmt(best.guess)}</span></div>` : ''}
+        ${pins}
       </div></div>`;
   }
+  // Faces on the number line that would cover each other move up a level (the winners come first and stay
+  // lowest). One that still has no room two levels up becomes a plain dot.
+  function spreadPins() {
+    const first = stage.querySelector(".axis .pin");
+    if (!first) return;
+    // still hidden (behind the login): measure once it shows
+    if (!first.getClientRects().length) { setTimeout(() => first.isConnected && spreadPins(), 250); return; }
+    const placed = [];
+    const hit = (a, b) => a.left < b.right - 2 && b.left < a.right - 2 && a.top < b.bottom - 2 && b.top < a.bottom - 2;
+    const roof = stage.querySelector('.closest')?.getBoundingClientRect().bottom ?? -Infinity;   // never over the list
+    for (const pin of stage.querySelectorAll('.axis .pin')) {
+      const base = +pin.dataset.base, step = pin.offsetHeight + 8;
+      let lvl = 0, rect, room = false;
+      for (; lvl <= 2; lvl++) {
+        pin.style.bottom = base + lvl * step + 'px';
+        rect = pin.getBoundingClientRect();
+        if (rect.top < roof) break;
+        if (!placed.some(p => hit(p, rect))) { room = true; break; }
+      }
+      if (!room && pin.classList.contains('win')) { pin.style.bottom = base + 'px'; room = true; rect = pin.getBoundingClientRect(); }
+      if (room) placed.push(rect);
+      else pin.outerHTML = `<i class="dot" style="left:${pin.style.left};bottom:${base - 16}px"></i>`;
+    }
+  }
+
   function niceStep(raw) {
     const p = Math.pow(10, Math.floor(Math.log10(raw || 1)));
     return [1, 2, 2.5, 5, 10].map(m => m * p).find(v => v >= raw) || 10 * p;

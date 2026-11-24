@@ -193,7 +193,7 @@ input { font: inherit; }
 .standings h1 { position: absolute; left: 72px; top: 48px; font-size: 64px; font-weight: 800; color: #fff; letter-spacing: -.02em; }
 .standings h1 span { font-family: var(--num); font-size: 30px; font-weight: 800; color: var(--gold); margin-left: 18px; letter-spacing: 0; }
 .sheet { position: absolute; left: 72px; top: 150px; width: 950px; bottom: 56px; background: var(--card); border-radius: 26px; padding: 22px 34px 26px; box-shadow: 0 18px 34px rgba(0,0,0,.32); display: flex; flex-direction: column; }
-.sheet .head, .sheet .line { display: grid; grid-template-columns: 58px 50px 88px 1fr 112px 132px 140px; align-items: center; column-gap: 12px; }
+.sheet .head, .sheet .line { display: grid; grid-template-columns: 58px 50px 88px 1fr 112px 132px 170px; align-items: center; column-gap: 12px; }
 .sheet .head { font-size: 20px; font-weight: 600; color: var(--ink-soft); padding: 4px 8px 12px; border-bottom: 2px solid var(--track-line); }
 .sheet .head .r { text-align: right; }
 .sheet .line { flex: 1; max-height: 116px; padding: 0 8px; border-bottom: 2px solid #eee9de; animation: rise .6s var(--ease-out) both; }
@@ -697,3 +697,17 @@ input { font: inherit; }
 .pic-wide .book.with-pics .row { min-height: 128px; }
 .pic-wide .row .opic { width: 104px; height: 104px; }
 .abtn .opic { flex: none; width: 84px; height: 84px; border-radius: 12px; object-fit: cover; border: 3px solid #fff; background: #fff; }
+
+/* number reveal: the closest players' faces on the line; the winners (ties included) in gold, the others smaller */
+.pin.win { z-index: 2; }
+.pin.other { z-index: 1; }
+.pin.other .face { width: 46px; height: 46px; border-width: 3px; }
+.pin.other span { background: #fff; font-size: 15px; }
+/* narrow chart beside a portrait picture: smaller faces and a taller line so the closest players fit */
+.q-side .axis { height: 215px; }
+.q-side .axis .target { height: 130px; }
+.q-side .pin .face { width: 46px; height: 46px; border-width: 3px; }
+.q-side .pin.other .face { width: 36px; height: 36px; }
+.q-side .pin span { font-size: 15px; }
+.q-side .pin.other span { font-size: 13px; }
+.sheet .total { white-space: nowrap; }

@@ -75,10 +75,10 @@
       "text": "Match each colleague with their country of origin.",
       "pairs": [
         { "left": { "image": "/images/btcs-christmas-quiz/geovanna.png",  "text": "Geovanna" },          "right": { "text": "Ecuador" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/anna.png",      "text": "Anna" },              "right": { "text": "Ukraine" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/yuliia.jpg",    "text": "Yuliia" },            "right": { "text": "Ukraine" } },
         { "left": { "image": "/images/btcs-christmas-quiz/michaela.jpg",  "text": "Michaela" },   "right": { "text": "Czech Republic" } },
         { "left": { "image": "/images/btcs-christmas-quiz/magdalena.jpg", "text": "Magdalena" }, "right": { "text": "Bulgaria" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/martina.jpg",   "text": "Martina" },  "right": { "text": "Slovakia" } }
+        { "left": { "image": "/images/btcs-christmas-quiz/kristinab.jpg", "text": "Kristína" }, "right": { "text": "Slovakia" } }
       ]
     },
     {
@@ -116,7 +116,7 @@
       "pairs": [
         { "left": { "image": "/images/btcs-christmas-quiz/jakub.png",   "text": "Jakub" },  "right": { "text": "Senior Developer" } },
         { "left": { "image": "/images/btcs-christmas-quiz/michalp.png", "text": "Michal" }, "right": { "text": "Risk Officer" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/yuliia.jpg",  "text": "Yuliia" }, "right": { "text": "Compliance Officer" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/martina.jpg", "text": "Martina" }, "right": { "text": "Vendor Manager" } },
         { "left": { "image": "/images/btcs-christmas-quiz/maros.png",   "text": "Maroš" },  "right": { "text": "Data Engineer" } },
         { "left": { "image": "/images/btcs-christmas-quiz/julian.png",  "text": "Julian" }, "right": { "text": "Microsoft 365 & Azure Cloud Engineer" } }
       ]
@@ -127,10 +127,25 @@
       "pairs": [
         { "left": { "image": "/images/btcs-christmas-quiz/erik.jpg",   "text": "Erik" },   "right": { "text": "1markosh" } },
         { "left": { "image": "/images/btcs-christmas-quiz/lujza.png",  "text": "Lujza" },  "right": { "text": "magical_breeze" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/marcel.jpg", "text": "Marcel" }, "right": { "text": "mackynator" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/anna.png",   "text": "Anna" },   "right": { "text": "_.annaverse._" } },
         { "left": { "image": "/images/btcs-christmas-quiz/tomas.jpg",  "text": "Tomáš" },  "right": { "text": "redwicek" } },
         { "left": { "image": "/images/btcs-christmas-quiz/linda.jpg",  "text": "Linda" },  "right": { "text": "thatgirlnamedlinda" } }
       ]
+    },
+    {
+      "type": "MultipleChoice",
+      "text": "Which of our colleagues is this kid?",
+      "image": "/images/btcs-christmas-quiz/marcelko.jpg",
+      "options": ["Michal", "Marcel", "Róbert", "Štefan"],
+      "optionImages": ["/images/btcs-christmas-quiz/michals.jpg", "/images/btcs-christmas-quiz/marcel.jpg", "/images/btcs-christmas-quiz/robert.jpg", "/images/btcs-christmas-quiz/stefang.jpg"],
+      "correctIndex": 1
+    },
+    {
+      "type": "ClosestNumber",
+      "text": "How many people work in our Bratislava office (not counting our colleagues from Hungary)?",
+      "image": "/images/btcs-christmas-quiz/office.jpg",
+      "correctNumber": 43,
+      "unit": "people"
     }
   ]
 }

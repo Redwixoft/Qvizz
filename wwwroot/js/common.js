@@ -30,7 +30,8 @@ const Qvizz = (() => {
   /** Colour class for an answer piece: A-D red/green/blue/yellow; true/false blue/red. */
   const optClass = (type, i) => type === 'TrueFalse' ? `tf-${i}` : `opt-${i}`;
 
-  const fmt = n => Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 }).replace(/,/g, ' ');
+  // thousands split by a no-break space ("1 079"), so a number never wraps onto two lines
+  const fmt = n => Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 }).replace(/,/g, '\u00a0');
 
   const ICON = {
     check: colour => `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="${colour}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
