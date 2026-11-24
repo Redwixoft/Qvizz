@@ -274,17 +274,21 @@
     return `<div class="ladder ${rail ? '' : 'no-rail'}">${rail}<div class="rungs" style="--n:${items.length}">${rows}</div></div>`;
   }
 
+  // A multiple-choice answer can carry a picture (e.g. a colleague's face) next to its text.
+  const hasPics = q => (q.optionImages || []).some(Boolean);
+  const optPic = (q, i) => q.optionImages?.[i] ? `<img class="opic" src="${esc(q.optionImages[i])}" alt="">` : '';
+
   // ----- question -----
   function questionScreen(s) {
     const q = s.question;
     const clock = `<div class="tok" id="timer"></div><span>Q ${s.questionIndex + 1} / ${s.questionCount}</span>`;
     let body = '';
     if (q.type === 'MultipleChoice') {
-      body = `<div class="book">${q.options.map((o, i) => `
-        <div class="row ${optClass(q.type, i)} plastic"><b class="tok">${LETTERS[i]}</b><span class="txt">${esc(o)}</span></div>`).join('')}</div>`;
+      body = `<div class="book ${hasPics(q) ? 'with-pics' : ''}">${q.options.map((o, i) => `
+        <div class="row ${optClass(q.type, i)} plastic"><b class="tok">${LETTERS[i]}</b>${optPic(q, i)}<span class="txt">${esc(o)}</span></div>`).join('')}</div>`;
     } else if (q.type === 'TrueFalse') {
       body = `<div class="tf">${q.options.map((o, i) => `
-        <div class="row ${optClass(q.type, i)} plastic"><b class="tok">${LETTERS[i]}</b><span class="txt">${esc(o)}</span></div>`).join('')}</div>`;
+        <div class="row ${optClass(q.type, i)} plastic"><b class="tok">${LETTERS[i]}</b>${optPic(q, i)}<span class="txt">${esc(o)}</span></div>`).join('')}</div>`;
     } else if (q.type === 'Grouping') {
       body = `<div class="cols">${q.groupLeft.map((l, i) => `
         <div class="it left"><span class="n">${i + 1}</span>${item(l)}</div><div class="it">${item(q.groupRight[i])}</div>`).join('')}</div>`;
@@ -320,10 +324,10 @@
           ? `<span class="who">${r.firstCorrect.map(p => face(p)).join('')}${r.correctPlayers > r.firstCorrect.length ? `<em>+${r.correctPlayers - r.firstCorrect.length}</em>` : ''}</span>` : '';
         const tokColour = getComputedStyle(document.documentElement).getPropertyValue(q.type === 'TrueFalse' ? (i ? '--red' : '--blue') : ['--red', '--green', '--blue', '--ink'][i]);
         return `<div class="row ${optClass(q.type, i)} plastic ${win ? 'win' : 'out'}" data-v="${(r.optionCounts[i] / total) * 100}">
-          <b class="tok">${win ? ICON.check(tokColour.trim()) : LETTERS[i]}</b><span class="txt">${esc(o)}</span>
+          <b class="tok">${win ? ICON.check(tokColour.trim()) : LETTERS[i]}</b>${optPic(q, i)}<span class="txt">${esc(o)}</span>
           <span class="chips">${faces}<b>${r.optionCounts[i]}</b></span><i class="vol"></i></div>`;
       }).join('');
-      body = `<div class="${q.type === 'TrueFalse' ? 'tf' : 'book'}">${rows}</div>`;
+      body = `<div class="${q.type === 'TrueFalse' ? 'tf' : 'book'} ${hasPics(q) ? 'with-pics' : ''}">${rows}</div>`;
     } else if (q.type === 'Grouping') {
       meta = !r.answeredPlayers ? 'Nobody answered this one' : `<b>${r.correctPlayers}</b> of ${r.answeredPlayers} matched every pair${firstNames ? ` · first: ${firstNames}` : ''}`;
       body = `<div class="cols">${r.correctPairs.map((p, i) => `

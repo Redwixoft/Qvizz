@@ -76,9 +76,9 @@
       "pairs": [
         { "left": { "image": "/images/btcs-christmas-quiz/geovanna.png",  "text": "Geovanna" },          "right": { "text": "Ecuador" } },
         { "left": { "image": "/images/btcs-christmas-quiz/anna.png",      "text": "Anna" },              "right": { "text": "Ukraine" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/michaela.jpg",  "text": "Michaela Buckova" },   "right": { "text": "Czech Republic" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/magdalena.jpg", "text": "Magdalena Linkova" }, "right": { "text": "Bulgaria" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/lujza.png",     "text": "Lujza Petrikova" },    "right": { "text": "Slovakia" } }
+        { "left": { "image": "/images/btcs-christmas-quiz/michaela.jpg",  "text": "Michaela" },   "right": { "text": "Czech Republic" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/magdalena.jpg", "text": "Magdalena" }, "right": { "text": "Bulgaria" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/martina.jpg",   "text": "Martina" },  "right": { "text": "Slovakia" } }
       ]
     },
     {
@@ -89,17 +89,47 @@
       "correctIndex": 0
     },
     {
+      "type": "MultipleChoice",
+      "text": "Which colleague ran for the local council in the recent elections?",
+      "image": "/images/btcs-christmas-quiz/opoldus.jpg",
+      "options": ["Martin", "Andrej", "Katka", "Boris"],
+      "optionImages": ["/images/btcs-christmas-quiz/martin.jpg", "/images/btcs-christmas-quiz/andrej.png", "/images/btcs-christmas-quiz/katka.png", "/images/btcs-christmas-quiz/boris.jpg"],
+      "correctIndex": 0
+    },
+    {
       "type": "Ordering",
       "text": "Order these colleagues by how long they have been with the company.",
       "topLabel": "Longest in the company",
       "bottomLabel": "Newest",
       // the right order, longest first (players get them shuffled)
       "items": [
-        { "image": "/images/btcs-christmas-quiz/marcel.jpg",   "text": "Marcel" },
+        { "image": "/images/btcs-christmas-quiz/stipek.jpg",   "text": "Michal" },
         { "image": "/images/btcs-christmas-quiz/milan.png",    "text": "Milan" },
         { "image": "/images/btcs-christmas-quiz/petra.png",    "text": "Petra" },
         { "image": "/images/btcs-christmas-quiz/nada.jpg",     "text": "Nadežda" },
         { "image": "/images/btcs-christmas-quiz/kristina.jpg", "text": "Kristína" }
+      ]
+    },
+    {
+      "type": "Grouping",
+      "text": "Match each colleague with their position.",
+      "pairs": [
+        { "left": { "image": "/images/btcs-christmas-quiz/jakub.png",   "text": "Jakub" },  "right": { "text": "Senior Developer" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/michalp.png", "text": "Michal" }, "right": { "text": "Risk Officer" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/yuliia.jpg",  "text": "Yuliia" }, "right": { "text": "Compliance Officer" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/maros.png",   "text": "Maroš" },  "right": { "text": "Data Engineer" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/julian.png",  "text": "Julian" }, "right": { "text": "Microsoft 365 & Azure Cloud Engineer" } }
+      ]
+    },
+    {
+      "type": "Grouping",
+      "text": "Match each colleague with their Instagram name.",
+      "pairs": [
+        { "left": { "image": "/images/btcs-christmas-quiz/erik.jpg",   "text": "Erik" },   "right": { "text": "1markosh" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/lujza.png",  "text": "Lujza" },  "right": { "text": "magical_breeze" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/marcel.jpg", "text": "Marcel" }, "right": { "text": "mackynator" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/tomas.jpg",  "text": "Tomáš" },  "right": { "text": "redwicek" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/linda.jpg",  "text": "Linda" },  "right": { "text": "thatgirlnamedlinda" } }
       ]
     }
   ]

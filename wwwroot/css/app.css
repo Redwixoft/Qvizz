@@ -690,3 +690,10 @@ input { font: inherit; }
 .pair:has(> .cell.l > img + span) { grid-template-columns: 52% 1fr; }
 .pair .cell.l:has(> img + span) { flex-direction: row; justify-content: flex-start; text-align: left; font-size: 14px; }
 .pair .cell.l > img:has(+ span) { flex: none; }
+
+/* multiple-choice answers with a picture (e.g. a colleague's face) between the letter and the text */
+.row .opic { flex: none; width: 104px; height: 104px; border-radius: 14px; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,.25); background: #fff; }
+.q-side .row .opic { width: 84px; height: 84px; }
+.pic-wide .book.with-pics .row { min-height: 128px; }
+.pic-wide .row .opic { width: 104px; height: 104px; }
+.abtn .opic { flex: none; width: 84px; height: 84px; border-radius: 12px; object-fit: cover; border: 3px solid #fff; background: #fff; }

@@ -826,7 +826,7 @@ public sealed class GameService
         if (_questionIndex < 0 || _phase is Phase.Lobby or Phase.Countdown or Phase.Awards or Phase.Finished) return null;
         var q = CurrentQuestion;
         // While the question is being read, the answers stay secret on every screen.
-        if (_phase == Phase.Reading) return new PublicQuestion(q.Type, q.Text, q.Image, [], [], [], q.Unit, [], null, null);
+        if (_phase == Phase.Reading) return new PublicQuestion(q.Type, q.Text, q.Image, [], [], [], q.Unit, [], null, null, []);
         var shuffled = q.Pieces > 0 && _groupRightOrder.Length == q.Pieces;
         return new PublicQuestion(
             q.Type, q.Text, q.Image, q.EffectiveOptions,
@@ -834,7 +834,8 @@ public sealed class GameService
             shuffled && q.Type == QuestionType.Grouping ? _groupRightOrder.Select(i => q.Pairs[i].Right).ToList() : [],
             q.Unit,
             shuffled && q.Type == QuestionType.Ordering ? _groupRightOrder.Select(i => q.Items[i]).ToList() : [],
-            q.TopLabel, q.BottomLabel);
+            q.TopLabel, q.BottomLabel,
+            q.Type == QuestionType.MultipleChoice ? q.OptionImages : []);
     }
 
     private IReadOnlyList<AwardView> AwardViews() =>

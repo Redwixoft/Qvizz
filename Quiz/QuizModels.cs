@@ -40,6 +40,9 @@ public sealed class Question
     // MultipleChoice: exactly 4 options. TrueFalse: ignored (always True/False).
     public List<string> Options { get; set; } = [];
 
+    /// <summary>MultipleChoice: optional picture for each option (same order as options), e.g. a colleague's face.</summary>
+    public List<string?> OptionImages { get; set; } = [];
+
     // MultipleChoice: 0..3. TrueFalse: use CorrectBool.
     public int? CorrectIndex { get; set; }
     public bool? CorrectBool { get; set; }
@@ -109,6 +112,7 @@ public sealed class QuizDefinition
                 case QuestionType.MultipleChoice:
                     if (q.Options.Count != 4) throw new InvalidOperationException($"{where}: needs exactly 4 options");
                     if (q.CorrectIndex is not (>= 0 and <= 3)) throw new InvalidOperationException($"{where}: correctIndex must be 0-3");
+                    if (q.OptionImages.Count is not (0 or 4)) throw new InvalidOperationException($"{where}: optionImages needs 4 pictures (or none)");
                     break;
                 case QuestionType.TrueFalse:
                     if (q.CorrectBool is null) throw new InvalidOperationException($"{where}: correctBool is required");

@@ -54,7 +54,7 @@ a live copy in memory so phones get instant responses.
 ## Quiz content
 
 Edit `Quiz/quiz.json` and restart. Put images in `wwwroot/images/` and reference them as `/images/file.jpg`.
-Question types: `MultipleChoice` (4 options + `correctIndex`), `TrueFalse` (`correctBool`),
+Question types: `MultipleChoice` (4 options + `correctIndex`, optional `optionImages`: 4 pictures shown with the options), `TrueFalse` (`correctBool`),
 `Grouping` (`pairs` of `left`/`right`, each with `text` and/or `image`), `ClosestNumber` (`correctNumber`, optional `unit`),
 `Ordering` (3-6 `items`, each with `text` and/or `image`, listed in the RIGHT order top to bottom; players get them
 shuffled; optional `topLabel` / `bottomLabel` notes beside the two ends, e.g. "Longest in the company" / "Newest").

@@ -210,8 +210,9 @@
     const q = s.question;
     let body = '';
     if (q.type === 'MultipleChoice' || q.type === 'TrueFalse') {
+      const pic = i => q.optionImages?.[i] ? `<img class="opic" src="${esc(q.optionImages[i])}" alt="">` : '';
       body = `<div class="answers ${q.type === 'TrueFalse' ? 'tf' : ''}">${q.options.map((o, i) => `
-        <button class="abtn ${optClass(q.type, i)} plastic" data-i="${i}" type="button"><b class="tok">${LETTERS[i]}</b><span class="t">${esc(o)}</span></button>`).join('')}</div>`;
+        <button class="abtn ${optClass(q.type, i)} plastic" data-i="${i}" type="button"><b class="tok">${LETTERS[i]}</b>${pic(i)}<span class="t">${esc(o)}</span></button>`).join('')}</div>`;
     } else if (q.type === 'Grouping') {
       if (!grouping || grouping.qi !== s.questionIndex)
         grouping = { qi: s.questionIndex, order: s.myGrouping ? [...s.myGrouping] : q.groupRight.map((_, i) => i), selected: null };

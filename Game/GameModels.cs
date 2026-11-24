@@ -97,7 +97,9 @@ public sealed record PublicQuestion(
     /// <summary>Ordering: the items shuffled (the starting order on every phone) and the notes for the two ends.</summary>
     IReadOnlyList<QuizItem> OrderItems,
     string? TopLabel,
-    string? BottomLabel);
+    string? BottomLabel,
+    /// <summary>MultipleChoice: a picture per option, or empty.</summary>
+    IReadOnlyList<string?> OptionImages);
 
 public sealed record ClosestGuess(string Nickname, string? AvatarUrl, int Seat, double Guess, int Points);
 
