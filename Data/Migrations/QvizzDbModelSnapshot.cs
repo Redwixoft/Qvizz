@@ -33,6 +33,9 @@ namespace Qvizz.Data.Migrations
                     b.Property<DateTimeOffset?>("AnsweredAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.PrimitiveCollection<int[]>("Arranged")
+                        .HasColumnType("integer[]");
+
                     b.Property<int>("Bonus")
                         .HasColumnType("integer");
 
@@ -149,6 +152,9 @@ namespace Qvizz.Data.Migrations
 
                     b.Property<int>("QuestionIndex")
                         .HasColumnType("integer");
+
+                    b.Property<string>("QuizJson")
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("QuizTitle")
                         .IsRequired()

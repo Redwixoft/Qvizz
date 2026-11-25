@@ -5,6 +5,7 @@
   const stage = $('#stage');
   let state = null;
   let renderedKey = null;
+  QvizzHistory.init(conn, () => state);
   const seen = new Set();   // players already seated in the lobby (only newcomers animate in)
 
   // ---------- fit the 1440×900 stage to any screen ----------
@@ -83,6 +84,7 @@
     $('#saveNote').classList.toggle('hidden', s.persistent);
     renderPlayersPanel();
     render();
+    QvizzHistory.onState(s);
   });
 
   function render() {
@@ -476,8 +478,12 @@
       <div class="podium-title">${title}</div>
       <div class="podium">${place(second, 'p2')}${place(first, 'p1')}${place(third, 'p3')}</div>
       <div class="rest">${rest}</div>
-      <button class="btn light plastic newgame" data-act="NewGame"
-        data-confirm="Start a new game? This one is saved in the archive and everyone joins again.">New game</button>
+      <div class="end-tools">
+        <button type="button" class="btn light plastic" data-hist="open:full">Full standings</button>
+        <button type="button" class="btn light plastic" data-hist="open:list">Old games</button>
+        <button class="btn light plastic newgame" data-act="NewGame"
+          data-confirm="Start a new game? This one is saved in the archive and everyone joins again.">New game</button>
+      </div>
     </div>`;
   }
 

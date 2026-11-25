@@ -24,8 +24,7 @@
     {
       "type": "MultipleChoice",
       "text": "Which coffee brand do we have in our office kitchen?",
-      // Picture to come: put it in wwwroot/images/btcs-christmas-quiz/ and add e.g.
-      // "image": "/images/btcs-christmas-quiz/coffee.jpg",
+      "image": "/images/btcs-christmas-quiz/coffee.jpg",
       "options": ["Zlaté zrnko", "Goriffee", "Bitcoffee", "Segafredo"],
       "correctIndex": 0
     },
@@ -44,8 +43,7 @@
       "type": "MultipleChoice",
       "text": "What is the name of the dog in these pictures?",
       "image": "/images/btcs-christmas-quiz/dog.jpg",
-      // TODO: replace "TBA" with the dog's real name (it's the correct answer, D).
-      "options": ["Bruno", "Jozef", "Dunčo", "TBA"],
+      "options": ["Bruno", "Jozef", "Dunčo", "Bono"],
       "correctIndex": 3
     },
     {
@@ -146,6 +144,19 @@
       "image": "/images/btcs-christmas-quiz/office.jpg",
       "correctNumber": 43,
       "unit": "people"
+    },
+    {
+      "type": "MultipleChoice",
+      "text": "We had a quiz at last year's summer drinks event. What was the name of the winning team?",
+      "image": "/images/btcs-christmas-quiz/diploma.jpg",
+      "options": ["Štefan a bitches", "Michal a peasants", "Martin a squatters", "Julian a plebs"],
+      "correctIndex": 3
+    },
+    {
+      "type": "ClosestNumber",
+      "text": "When you log in to ClickTime, you have to fill in the organization ID. What is it for Bitcoin Suisse?",
+      "image": "/images/btcs-christmas-quiz/clicktime.jpg",
+      "correctNumber": 1455
     }
   ]
 }

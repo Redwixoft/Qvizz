@@ -49,7 +49,9 @@ public sealed record AnswerRecord(
     double? Number,
     string Detail,
     int StreakBonus = 0,
-    int Streak = 0);
+    int Streak = 0,
+    /// <summary>Matching / ordering: the player's arrangement in quiz order (pair or item index per row / place).</summary>
+    int[]? Arranged = null);
 
 public sealed class PlayerState
 {

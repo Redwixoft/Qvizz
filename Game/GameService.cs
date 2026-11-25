@@ -30,7 +30,7 @@ public sealed class GameOptions
 ///
 /// All state changes go through <see cref="_gate"/> so mutation and the pushes to clients happen in order.
 /// </summary>
-public sealed class GameService
+public sealed partial class GameService
 {
     public const string AdminsGroup = "admins";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -73,6 +73,7 @@ public sealed class GameService
         _options = options.Value;
         _log = log;
         Quiz = QuizDefinition.Load(Path.Combine(env.ContentRootPath, _options.QuizFile));
+        _quizJson = JsonSerializer.Serialize(Quiz.Questions, Json);
     }
 
     private Question CurrentQuestion => Quiz.Questions[_questionIndex];
@@ -146,7 +147,7 @@ public sealed class GameService
                 {
                     p.History[a.QuestionIndex] = new AnswerRecord(a.QuestionIndex, a.AnsweredAt is not null, a.Correct,
                         a.Points, a.Bonus, a.GoodPairs, a.Changes, a.ResponseMs, a.RemainingMs, a.RankAfter ?? row.Rank,
-                        a.Choice, a.Number, a.Detail ?? "", a.StreakBonus, a.StreakAfter);
+                        a.Choice, a.Number, a.Detail ?? "", a.StreakBonus, a.StreakAfter, a.Arranged);
                 }
                 if (a.QuestionIndex == _questionIndex && a.AnsweredAt is not null)
                 {
@@ -188,6 +189,7 @@ public sealed class GameService
         NextSeat = _nextSeat,
         RevealJson = _reveal is null ? null : JsonSerializer.Serialize(_reveal, Json),
         AwardsJson = _awards.Count == 0 ? null : JsonSerializer.Serialize(_awards, Json),
+        QuizJson = _quizJson,
         PausedRemainingMs = _pausedRemaining is { } left ? (int)left.TotalMilliseconds : null,
         CreatedAt = _createdAt,
         StartedAt = _startedAt,
@@ -211,7 +213,7 @@ public sealed class GameService
             Choice = a?.Choice, Grouping = a?.Grouping, Number = a?.Number, AnsweredAt = a?.At, Seq = a?.Seq ?? 0,
             Changes = a?.Changes ?? 0, ResponseMs = a?.ResponseMs, RemainingMs = a?.RemainingMs,
             Scored = rec is not null, Correct = rec?.Correct ?? false, Points = rec?.Points ?? 0, Bonus = rec?.Bonus ?? 0,
-            GoodPairs = rec?.GoodPairs ?? 0, RankAfter = rec?.RankAfter, Detail = rec?.Detail,
+            GoodPairs = rec?.GoodPairs ?? 0, Arranged = rec?.Arranged, RankAfter = rec?.RankAfter, Detail = rec?.Detail,
             StreakBonus = rec?.StreakBonus ?? 0, StreakAfter = rec?.Streak ?? 0
         });
     }
@@ -305,7 +307,7 @@ public sealed class GameService
     }
 
     public byte[]? GetAvatar(Guid playerId) =>
-        _players.TryGetValue(playerId, out var p) ? p.AvatarPng : null;
+        _players.TryGetValue(playerId, out var p) ? p.AvatarPng : ArchivedAvatar(playerId);
 
     public Task<string?> AnswerChoiceAsync(string connectionId, int choice) =>
         SubmitAsync(connectionId, q =>
@@ -524,10 +526,12 @@ public sealed class GameService
                     GroupRightOrder = _groupRightOrder, AnswerSeq = _answerSeq, NextSeat = _nextSeat,
                     RevealJson = _reveal is null ? null : JsonSerializer.Serialize(_reveal, Json),
                     AwardsJson = _awards.Count == 0 ? null : JsonSerializer.Serialize(_awards, Json),
+                    QuizJson = _quizJson,
                     CreatedAt = _createdAt, StartedAt = _startedAt, FinishedAt = _finishedAt, ArchivedAt = DateTimeOffset.UtcNow
                 });
                 await _db.FlushAsync(CancellationToken.None);
             }
+            else if (_startedAt is not null) KeepInMemory(SnapshotCurrent());   // no database: old games live until a restart
             NewGame();
             await _hub.Clients.All.SendAsync("reset");
             await PushAdminAsync();
@@ -751,9 +755,12 @@ public sealed class GameService
         {
             var a = p.CurrentAnswer;
             var r = p.LastResult!;
+            // matching / ordering: keep the arrangement in quiz order, so the history can show it after the shuffle is gone
+            var arranged = q.Pieces > 0 && a?.Grouping is { } shown && shown.Length == _groupRightOrder.Length
+                ? shown.Select(pos => _groupRightOrder[pos]).ToArray() : null;
             p.History[_questionIndex] = new AnswerRecord(_questionIndex, a is not null, r.Correct, r.Points, r.Bonus,
                 goodPairs.GetValueOrDefault(p.Id), a?.Changes ?? 0, a?.ResponseMs, a?.RemainingMs, p.Rank,
-                a?.Choice, a?.Number, r.Detail, r.StreakBonus, r.Streak);
+                a?.Choice, a?.Number, r.Detail, r.StreakBonus, r.Streak, arranged);
         }
 
         // The first three fully-correct players, in answer order, get their faces on the reveal.

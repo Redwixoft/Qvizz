@@ -62,6 +62,14 @@ Any question can override its time with `timeLimitSeconds`.
 Any question can have a picture: `"image": "/images/file.jpg"`. It shows large on the presenter screen only
 (landscape pictures between the question and the answers, portrait ones beside them). Use JPG/PNG/WebP around 1600px wide.
 
+## Old games
+
+The final screen has **Full standings** (everyone in this game) and **Old games**: every played game, newest first,
+with its full standings, a grid of every player's answer to every question, each question with everyone's answers
+(matching and ordering show the whole arrangement), and the awards. Games are kept in the database; without one,
+old games are kept in memory until the server restarts. Games played before this feature show the current quiz's
+questions, and matching / ordering answers only as "3 of 5 right".
+
 ## Look and feel
 
 "Game Night × Trading Floor": a board-game table (cobalt board, white cards, plastic answer pieces,

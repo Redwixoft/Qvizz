@@ -32,6 +32,11 @@ public sealed class GameHub(GameService game, IConfiguration config) : Hub
     public Task Pause() => RequireAdmin() ? game.PauseAsync() : Task.CompletedTask;
     public Task Resume() => RequireAdmin() ? game.ResumeAsync() : Task.CompletedTask;
 
+    // Old games: the list, and everything about one of them (standings, every answer, awards).
+    public Task<IReadOnlyList<HistoryGameSummary>> ListGames() =>
+        RequireAdmin() ? game.ListGamesAsync() : Task.FromResult<IReadOnlyList<HistoryGameSummary>>([]);
+    public Task<HistoryGame?> GetGame(Guid id) => RequireAdmin() ? game.GetGameAsync(id) : Task.FromResult<HistoryGame?>(null);
+
     private bool RequireAdmin() =>
         Context.Items.TryGetValue(AdminFlag, out var v) && v is true
             ? true

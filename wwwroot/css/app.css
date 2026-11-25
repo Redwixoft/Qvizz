@@ -711,3 +711,111 @@ input { font: inherit; }
 .q-side .pin span { font-size: 15px; }
 .q-side .pin.other span { font-size: 13px; }
 .sheet .total { white-space: nowrap; }
+
+/* ---------- final screen: full standings / old games (history.js), in a panel over the stage ---------- */
+.end-tools { position: absolute; right: 72px; bottom: 40px; display: flex; gap: 14px; }
+.end-tools .newgame { position: static; }
+.end-tools .btn { font-size: 22px; }
+.hist { position: fixed; inset: 0; z-index: 30; overflow: auto; background: rgba(14, 30, 74, .94); padding: 32px 24px 48px; }
+.hist .hat { display: none; }
+.hist-card { max-width: 1280px; margin: 0 auto; background: var(--card); color: var(--ink); border-radius: 22px; padding: 26px 32px 32px; box-shadow: 0 18px 34px rgba(0,0,0,.35); }
+.hist-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+.hist-head h2 { font-size: 34px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+.hist-head p { color: var(--ink-soft); font-size: 17px; font-weight: 600; margin-top: 4px; }
+.hist-x, .hist-back { background: var(--track); color: var(--ink); font-size: 16px; font-weight: 700; padding: 8px 14px; border-radius: 10px; flex: none; }
+.hist-back { margin-bottom: 10px; }
+.hist-x:hover, .hist-back:hover { background: var(--track-line); }
+.hist-empty, .hist-hint { color: var(--ink-soft); font-size: 17px; font-weight: 600; padding: 8px 0; }
+.hist-hint { font-size: 15px; margin-bottom: 8px; }
+.hist-note { background: #fff3cd; border-radius: 12px; padding: 10px 14px; font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+.hist .face { width: 44px; height: 44px; border-width: 3px; flex: none; }
+.hist .nm { font-weight: 700; overflow-wrap: anywhere; }
+
+/* ranking list */
+.hist-rank { list-style: none; display: flex; flex-direction: column; }
+.hist-rank li { display: flex; align-items: center; gap: 14px; padding: 8px 10px; border-bottom: 2px solid #eee9de; font-size: 20px; }
+.hist-rank li:first-child { background: #fff8e1; border-radius: 12px; }
+.hist-rank .rk { width: 2.2ch; text-align: right; font-family: var(--num); font-weight: 800; font-size: 22px; flex: none; }
+.hist-rank .nm { flex: 1; min-width: 0; }
+.hist-rank .right { color: var(--ink-soft); font-size: 16px; font-weight: 600; flex: none; }
+.hist-rank .sc { font-family: var(--num); font-weight: 800; font-size: 24px; min-width: 5ch; text-align: right; white-space: nowrap; flex: none; }
+
+/* game list */
+.hist-games { display: flex; flex-direction: column; gap: 10px; }
+.hist-game { display: grid; grid-template-columns: 210px 1fr auto; grid-template-areas: "when ttl win" "when meta win"; gap: 2px 18px; align-items: center;
+  text-align: left; background: var(--track); border-radius: 14px; padding: 12px 18px; color: var(--ink); }
+.hist-game:hover { background: #ebe6da; }
+.hist-game .when { grid-area: when; font-family: var(--num); font-weight: 800; font-size: 16px; }
+.hist-game .when em { display: block; font-style: normal; font-family: var(--display); font-size: 13px; color: var(--green); }
+.hist-game .ttl { grid-area: ttl; font-size: 20px; font-weight: 800; }
+.hist-game .meta { grid-area: meta; font-size: 15px; font-weight: 600; color: var(--ink-soft); }
+.hist-game .win { grid-area: win; font-size: 17px; font-weight: 700; text-align: right; }
+.hist-game .win b { font-family: var(--num); }
+
+/* tabs */
+.hist-tabs { display: flex; gap: 6px; border-bottom: 2px solid var(--track-line); margin-bottom: 16px; }
+.hist-tabs button { font-size: 17px; font-weight: 700; padding: 10px 16px; border-radius: 10px 10px 0 0; color: var(--ink-soft); background: transparent; }
+.hist-tabs button.on { background: var(--ink); color: #fff; }
+
+/* answers grid */
+.hist-grid-wrap { overflow-x: auto; border: 2px solid #eee9de; border-radius: 12px; }
+.hist-grid { border-collapse: separate; border-spacing: 0; font-size: 15px; min-width: 100%; }
+.hist-grid th, .hist-grid td { padding: 6px 6px; border-bottom: 1px solid #eee9de; text-align: center; }
+.hist-grid thead th { position: sticky; top: 0; background: var(--card); font-weight: 700; color: var(--ink-soft); }
+.hist-grid thead button { font-family: var(--num); font-weight: 800; font-size: 14px; padding: 4px 6px; border-radius: 6px; background: var(--track); color: var(--ink); }
+.hist-grid thead button:hover { background: var(--track-line); }
+.hist-grid .pl { position: sticky; left: 0; z-index: 1; background: var(--card); text-align: left; min-width: 220px; }
+.hist-grid tbody .pl { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.hist-grid .pl .rk { font-family: var(--num); font-weight: 800; width: 2.2ch; text-align: right; flex: none; }
+.hist-grid .pl .face { width: 32px; height: 32px; border-width: 2px; }
+.hist-grid td { min-width: 54px; }
+.hist-grid td b { display: block; font-family: var(--num); font-weight: 800; font-size: 15px; }
+.hist-grid td small { display: block; font-family: var(--num); font-size: 12px; opacity: .8; }
+.hist-grid .tot { font-family: var(--num); font-weight: 800; font-size: 17px; white-space: nowrap; padding: 6px 12px; }
+.r-good { background: #dff3e3; color: #165c27; }
+.r-part { background: #fff1c2; color: #6b4e00; }
+.r-bad { background: #fbe1de; color: #8a2216; }
+.r-none { background: #f1efe9; color: #8a8f9f; }
+
+/* one question with everyone's answers */
+.hist-qs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.hist-qs button { font-family: var(--num); font-weight: 800; font-size: 15px; min-width: 38px; padding: 6px 8px; border-radius: 8px; background: var(--track); color: var(--ink); }
+.hist-qs button.on { background: var(--ink); color: #fff; }
+.hist-q { display: flex; gap: 20px; align-items: flex-start; background: var(--track); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+.hist-q img { width: 220px; max-height: 160px; object-fit: contain; border-radius: 10px; background: #fff; flex: none; }
+.hist-q small { color: var(--ink-soft); font-weight: 700; font-size: 14px; }
+.hist-q h3 { font-size: 24px; font-weight: 800; line-height: 1.2; margin: 4px 0 8px; }
+.ok-ans { font-size: 17px; font-weight: 600; color: #165c27; }
+.parts { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; font-size: 15px; font-weight: 600; }
+.parts li.ok::before { content: "\2713  "; color: var(--green); font-weight: 800; }
+.parts li.no::before { content: "\2717  "; color: var(--red); font-weight: 800; }
+.parts li.no { color: #8a2216; }
+.hist-ans { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-size: 16px; }
+.hist-ans th, .hist-ans td { padding: 8px 12px; text-align: left; vertical-align: middle; }
+.hist-ans tr > :first-child { border-radius: 10px 0 0 10px; }
+.hist-ans tr > :last-child { border-radius: 0 10px 10px 0; }
+.hist-ans .pl { display: flex; align-items: center; gap: 10px; width: 260px; }
+.hist-ans .pl .face { width: 36px; height: 36px; }
+.hist-ans .ans { font-weight: 700; color: var(--ink); }
+.hist-ans .ans .parts li.ok { color: #165c27; }
+.hist-ans .how { font-size: 14px; color: var(--ink-soft); font-weight: 600; white-space: nowrap; }
+.hist-ans .pt { font-family: var(--num); font-weight: 800; text-align: right; white-space: nowrap; }
+
+/* awards */
+.hist-awards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.hist-awards article { background: var(--track); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.hist-awards h3 { font-size: 20px; font-weight: 800; }
+.hist-awards p { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
+.hist-awards .w { display: flex; align-items: center; gap: 10px; font-size: 18px; }
+.hist-awards span { font-family: var(--num); font-weight: 800; font-size: 15px; }
+
+@media (max-width: 720px) {
+  .hist { padding: 12px 8px 32px; }
+  .hist-card { padding: 18px 16px 22px; }
+  .hist-game { grid-template-columns: 1fr; grid-template-areas: "when" "ttl" "meta" "win"; }
+  .hist-game .win { text-align: left; }
+  .hist-q { flex-direction: column; }
+  .hist-ans .pl { width: auto; }
+}
+.parts li { display: inline-flex; align-items: center; gap: 4px; }
+.parts img { height: 22px; width: auto; max-width: 40px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(20,33,61,.15); }

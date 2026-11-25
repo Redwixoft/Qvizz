@@ -20,6 +20,8 @@ public sealed class GameEntity
     /// <summary>The current reveal (votes, closest guesses…) as JSON, so a restart shows the same screen.</summary>
     public string? RevealJson { get; set; }
     public string? AwardsJson { get; set; }
+    /// <summary>The quiz questions as they were when this game was played, so its history still reads right after quiz.json changes.</summary>
+    public string? QuizJson { get; set; }
     /// <summary>When the host paused the timer: how much time was left. Null when running.</summary>
     public int? PausedRemainingMs { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
@@ -70,6 +72,8 @@ public sealed class AnswerEntity
     public Guid GameId { get; set; }
     public int? Choice { get; set; }
     public int[]? Grouping { get; set; }
+    /// <summary>Matching / ordering, once scored: the player's arrangement in quiz order (pair or item index per row / place).</summary>
+    public int[]? Arranged { get; set; }
     public double? Number { get; set; }
     public DateTimeOffset? AnsweredAt { get; set; }
     public long Seq { get; set; }
@@ -104,6 +108,7 @@ public sealed class QvizzDb(DbContextOptions<QvizzDb> options) : DbContext(optio
             e.Property(g => g.Phase).HasMaxLength(20);
             e.Property(g => g.RevealJson).HasColumnType("jsonb");
             e.Property(g => g.AwardsJson).HasColumnType("jsonb");
+            e.Property(g => g.QuizJson).HasColumnType("jsonb");
             e.HasIndex(g => g.Status);
         });
         b.Entity<PlayerEntity>(e =>
