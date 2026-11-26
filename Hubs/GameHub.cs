@@ -31,10 +31,12 @@ public sealed class GameHub(GameService game, IConfiguration config) : Hub
     public Task KickPlayer(Guid playerId) => RequireAdmin() ? game.KickAsync(playerId) : Task.CompletedTask;
     public Task Pause() => RequireAdmin() ? game.PauseAsync() : Task.CompletedTask;
     public Task Resume() => RequireAdmin() ? game.ResumeAsync() : Task.CompletedTask;
+    public Task EndQuestion() => RequireAdmin() ? game.EndQuestionNowAsync() : Task.CompletedTask;
 
     // Old games: the list, and everything about one of them (standings, every answer, awards).
     public Task<IReadOnlyList<HistoryGameSummary>> ListGames() =>
         RequireAdmin() ? game.ListGamesAsync() : Task.FromResult<IReadOnlyList<HistoryGameSummary>>([]);
+    public Task<string?> DeleteGame(Guid id) => RequireAdmin() ? game.DeleteGameAsync(id) : Task.FromResult<string?>(null);
     public Task<HistoryGame?> GetGame(Guid id) => RequireAdmin() ? game.GetGameAsync(id) : Task.FromResult<HistoryGame?>(null);
 
     private bool RequireAdmin() =>

@@ -117,7 +117,10 @@ public sealed record RevealInfo(
     int[] PlacedRight,
     IReadOnlyList<PlayerSummary> FirstCorrect,
     int CorrectPlayers,
-    int AnsweredPlayers);
+    int AnsweredPlayers,
+    /// <summary>The question's optional explanation, shown with the correct answer.</summary>
+    string? Explanation = null,
+    string? ExplanationImage = null);
 
 /// <summary>An end-of-game award, e.g. "Fastest finger".</summary>
 public sealed record Award(string Key, string Title, string Blurb, Guid WinnerId, string Stat);
@@ -161,7 +164,9 @@ public sealed record PlayerView(
     PlayerSummary? BoostRival,
     IReadOnlyList<AwardView> MyAwards,
     bool Paused,
-    IReadOnlyList<RecapItem> Recap);
+    IReadOnlyList<RecapItem> Recap,
+    string? Explanation = null,
+    string? ExplanationImage = null);
 
 /// <summary>One line of a player's end-of-game recap: their answer next to the right one.</summary>
 public sealed record RecapItem(int Number, string Question, string YourAnswer, string? CorrectAnswer, int Points, bool Correct, bool Answered);

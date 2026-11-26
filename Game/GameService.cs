@@ -15,6 +15,8 @@ public sealed class GameOptions
     public int ReadingSeconds { get; set; } = 5;
     public int QuestionSeconds { get; set; } = 30;
     public int GroupingSeconds { get; set; } = 45;
+    /// <summary>Multiple choice / true-false: once everyone has answered, the question ends this long after the last change.</summary>
+    public int EarlyEndSeconds { get; set; } = 3;
     public string QuizFile { get; set; } = "Quiz/quiz.json";
     /// <summary>Public address players open, e.g. "https://qvizz.up.railway.app/game". Shown as the lobby QR code.</summary>
     public string? PublicUrl { get; set; }
@@ -57,6 +59,7 @@ public sealed partial class GameService
     private long _answerSeq;
     private int _nextSeat = 1;
     private int _phaseVersion;              // invalidates stale timers
+    private int _earlyEndVersion;           // invalidates a stale "everyone has answered" countdown
     private RevealInfo? _reveal;
     private IReadOnlyList<Award> _awards = [];
     private TimeSpan? _pausedRemaining;     // set while the host has paused the timer
@@ -277,8 +280,8 @@ public sealed partial class GameService
             if (!_byConnection.Remove(connectionId, out var id)) return;
             if (_players.TryGetValue(id, out var p) && p.ConnectionId == connectionId) p.ConnectionId = null;
             // The last player still thinking may have just dropped out.
-            if (TryEndEarly()) await PushAllAsync();
-            else await PushAdminAsync();
+            ArmEarlyEnd();
+            await PushAdminAsync();
         }
         finally { _gate.Release(); }
     }
@@ -364,13 +367,9 @@ public sealed partial class GameService
             SaveAnswer(player);
             SaveGame();   // answer sequence
 
-            // Multiple choice / true-false: once every connected player has an answer, don't wait for the timer.
-            // Grouping / number questions always run the full time so nobody is cut off while thinking.
-            if (TryEndEarly())
-            {
-                await PushAllAsync();
-                return null;
-            }
+            // Multiple choice / true-false: once every connected player has an answer, the question ends a few seconds
+            // after the last change (each change restarts that). Grouping / number questions always run the full time.
+            ArmEarlyEnd();
 
             await PushAdminAsync();
             await PushPlayerAsync(player);
@@ -396,16 +395,56 @@ public sealed partial class GameService
         finally { _gate.Release(); }
     }
 
-    /// <summary>Ends a multiple-choice / true-false question once every connected player has answered.</summary>
-    private bool TryEndEarly()
+    private bool EveryoneAnswered()
     {
-        if (_pausedRemaining is not null) return false;   // the host paused: wait for them
         if (_phase != Phase.Question || CurrentQuestion.Type is not (QuestionType.MultipleChoice or QuestionType.TrueFalse))
             return false;
         var connected = _players.Values.Where(p => p.Connected).ToList();
-        if (connected.Count == 0 || connected.Any(p => p.CurrentAnswer is null)) return false;
-        EndQuestion();
-        return true;
+        return connected.Count > 0 && connected.All(p => p.CurrentAnswer is not null);
+    }
+
+    /// <summary>
+    /// Multiple choice / true-false: once every connected player has an answer, the question ends EarlyEndSeconds later.
+    /// Called after every answer change (and when someone drops out or the host resumes), so each change starts the
+    /// countdown again. It never runs past the question's own time: if that comes first, the normal timer ends it.
+    /// </summary>
+    private void ArmEarlyEnd()
+    {
+        _earlyEndVersion++;                                   // any earlier countdown no longer counts
+        if (_pausedRemaining is not null || !EveryoneAnswered()) return;   // paused by the host: wait for them
+        var endsAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(Math.Max(0, _options.EarlyEndSeconds));
+        if (endsAt >= _phaseEndsAt) return;
+        var (phase, version) = (_phaseVersion, _earlyEndVersion);
+        _ = Task.Run(async () =>
+        {
+            var wait = endsAt - DateTimeOffset.UtcNow;
+            if (wait > TimeSpan.Zero) await Task.Delay(wait);
+            await _gate.WaitAsync();
+            try
+            {
+                // still the same question, no change since, not paused, and nobody new is still thinking
+                if (phase != _phaseVersion || version != _earlyEndVersion || _pausedRemaining is not null || !EveryoneAnswered()) return;
+                EndQuestion();
+                SaveGame();
+                await PushAllAsync();
+            }
+            catch (Exception ex) { _log.LogError(ex, "Ending the question early failed"); }
+            finally { _gate.Release(); }
+        });
+    }
+
+    /// <summary>The host ends the running question now (e.g. everyone says they're done): straight to the answer.</summary>
+    public async Task EndQuestionNowAsync()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            if (_phase != Phase.Question) return;
+            EndQuestion();
+            SaveGame();
+            await PushAllAsync();
+        }
+        finally { _gate.Release(); }
     }
 
     private static bool SameAnswer(SubmittedAnswer? a, SubmittedAnswer b) =>
@@ -468,7 +507,7 @@ public sealed partial class GameService
             _phaseEndsAt = DateTimeOffset.UtcNow + left;
             _phaseVersion++;
             ScheduleTimer(_phase switch { Phase.Countdown => () => BeginQuestion(0), Phase.Reading => StartAnswering, _ => EndQuestion });
-            TryEndEarly();   // everyone may have answered while paused
+            ArmEarlyEnd();   // everyone may have answered while paused
             SaveGame();
             await PushAllAsync();
         }
@@ -553,7 +592,7 @@ public sealed partial class GameService
             }
             SavePlayer(p, kickedAt: DateTimeOffset.UtcNow);
             RecomputeRanks();
-            if (TryEndEarly()) { SaveGame(); }
+            ArmEarlyEnd();   // the removed player may have been the last one thinking
             await PushAllAsync();
         }
         finally { _gate.Release(); }
@@ -774,7 +813,8 @@ public sealed partial class GameService
             q.EffectiveCorrectIndex, optionCounts, q.CorrectNumber, closest, allGuesses,
             q.Type == QuestionType.Grouping ? q.Pairs : [],
             q.Type == QuestionType.Ordering ? q.Items : [], placedRight,
-            firstCorrect, correctPlayers, answered.Count);
+            firstCorrect, correctPlayers, answered.Count,
+            Blank(q.Explanation), Blank(q.ExplanationImage));
 
         EnterPhase(Phase.Reveal, TimeSpan.Zero);
 
@@ -785,6 +825,8 @@ public sealed partial class GameService
         }
         SaveGame();
     }
+
+    private static string? Blank(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
     private static string Fmt(double d) => d.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
@@ -895,7 +937,9 @@ public sealed partial class GameService
             showResult ? rival : null,
             _phase is Phase.Awards or Phase.Finished ? AwardViews().Where(a => a.Winner.Id == p.Id).ToList() : [],
             _pausedRemaining is not null,
-            _phase == Phase.Finished ? Recap(p) : []);
+            _phase == Phase.Finished ? Recap(p) : [],
+            showResult ? Blank(CurrentQuestion.Explanation) : null,
+            showResult ? Blank(CurrentQuestion.ExplanationImage) : null);
     }
 
     /// <summary>The player's answers next to the right ones, for the final phone screen.</summary>

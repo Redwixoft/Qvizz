@@ -64,6 +64,9 @@
   $('#resetBtn').onclick = () => {
     if (confirm('End this game and open a new lobby? Everyone has to join again. This game is kept in the archive.')) call('NewGame');
   };
+  $('#endQBtn').onclick = () => {
+    if (confirm('End this question now? Answers given so far are scored and the answer is shown.')) call('EndQuestion');
+  };
   $('#fullBtn').onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
   $('#playersBtn').onclick = () => { $('#playersPanel').classList.toggle('hidden'); renderPlayersPanel(); };
 
@@ -82,6 +85,7 @@
   conn.on('adminState', s => {
     state = s;
     $('#saveNote').classList.toggle('hidden', s.persistent);
+    $('#endQBtn').classList.toggle('hidden', s.phase !== 'Question');
     renderPlayersPanel();
     render();
     QvizzHistory.onState(s);
@@ -99,7 +103,7 @@
     countdown.stop();
     const asked = s.phase === 'Reading' || s.phase === 'Question' || s.phase === 'Reveal';
     stage.classList.toggle('centered', asked);
-    stage.classList.toggle('with-image', asked && !!s.question?.image);
+    stage.classList.toggle('with-image', asked && !!picOf(s));
     stage.classList.remove('pic-wide');
     Festive.calm(asked);
     switch (s.phase) {
@@ -229,8 +233,11 @@
     stage?.classList.toggle('pic-wide', !!wide);
   };
 
+  // The picture beside the question; on the answer screen the explanation picture (if any) takes its place.
+  const picOf = s => (s.phase === 'Reveal' && s.reveal?.explanationImage) || s.question?.image;
+
   function layout(s, content) {
-    const img = s.question?.image;
+    const img = picOf(s);
     if (!img) return content;
     const src = esc(img);
     return `<figure class="pic">
@@ -245,11 +252,11 @@
     return `<b>${s.answeredCount}</b> of ${s.players.filter(p => p.connected).length} ${verb}`;
   }
 
-  function card(s, side, meta) {
+  function card(s, side, meta, extra = '') {
     const q = s.question;
-    return `<section class="qcard" style="--qsize:${qSize(q.text, !!q.image)}px">
+    return `<section class="qcard" style="--qsize:${qSize(q.text, !!picOf(s))}px">
       <h1>${esc(q.text)}</h1>
-      <div class="meta" id="answered">${meta}</div>
+      <div class="meta" id="answered">${meta}</div>${extra}
       <div class="clock">${side}</div>
     </section>`;
   }
@@ -346,7 +353,8 @@
       meta = best ? `Closest: ${byGuess.join('; ')} · +${best.points}${winners.length > 1 ? ' each' : ''}` : 'Nobody guessed this time';
       body = numberReveal(q, r);
     }
-    stage.innerHTML = layout(s, card(s, nextButton(s), meta) + body);
+    const why = r.explanation ? `<p class="explain"><span class="why">Why</span>${esc(r.explanation)}</p>` : '';
+    stage.innerHTML = layout(s, card(s, nextButton(s), meta, why) + body);
     if (q.type === 'ClosestNumber') spreadPins();
     // grow the vote-volume bars once the rows are on screen
     requestAnimationFrame(() => requestAnimationFrame(() =>

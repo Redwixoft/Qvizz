@@ -13,10 +13,11 @@ public sealed record HistoryGameSummary(
     int Players, int QuestionsPlayed, int QuestionCount, string? Winner, int WinnerScore, bool Current);
 
 /// <summary>One line of a matching / ordering answer ("Anna → Ukraine", "2. Milan"), right or wrong; Image when the answer is a picture.</summary>
-public sealed record HistoryPart(string Text, bool Ok, string? Image = null);
+public sealed record HistoryPart(string Text, bool Ok, string? Image = null, string? LeftImage = null);
 
 public sealed record HistoryQuestion(
-    int Number, QuestionType Type, string Text, string? Image, string? Correct, IReadOnlyList<HistoryPart> CorrectParts);
+    int Number, QuestionType Type, string Text, string? Image, string? Correct, IReadOnlyList<HistoryPart> CorrectParts,
+    string? Explanation = null);
 
 /// <summary>Result: "good" (fully right), "part" (some points), "bad" (no points) or "none" (no answer).</summary>
 public sealed record HistoryAnswer(
@@ -147,6 +148,29 @@ public sealed partial class GameService
         catch (JsonException) { return null; }
     }
 
+    /// <summary>
+    /// Permanently removes an old game (e.g. a test run) with its players, faces and answers.
+    /// The game being played now can't be removed. Returns an error message, or null when it's gone.
+    /// </summary>
+    public async Task<string?> DeleteGameAsync(Guid id)
+    {
+        await _gate.WaitAsync();
+        try { if (id == _gameId) return "This is the game being played now. Start a new game first."; }
+        finally { _gate.Release(); }
+
+        lock (_memoryArchive)
+            if (_memoryArchive.RemoveAll(g => g.Id == id) > 0) return null;
+        if (!_db.Enabled) return "That game could not be found.";
+
+        await using var scope = _scopes.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<QvizzDb>();
+        // players, their faces and answers go with the game (cascading foreign keys)
+        var removed = await db.Games.Where(g => g.Id == id && g.Status == GameStatus.Archived).ExecuteDeleteAsync();
+        if (removed == 0) return "That game could not be found.";
+        _log.LogInformation("Deleted old game {Id}", id);
+        return null;
+    }
+
     // ======================= One game =======================
 
     public async Task<HistoryGame?> GetGameAsync(Guid id)
@@ -198,7 +222,8 @@ public sealed partial class GameService
             var q = Q(i);
             if (q is null) return new HistoryQuestion(i + 1, QuestionType.MultipleChoice, $"Question {i + 1}", null, null, []);
             var (correct, parts) = CorrectAnswer(q);
-            return new HistoryQuestion(i + 1, q.Type, q.Text, q.Image, correct, parts);
+            return new HistoryQuestion(i + 1, q.Type, q.Text, q.Image, correct, parts,
+                string.IsNullOrWhiteSpace(q.Explanation) ? null : q.Explanation.Trim());
         }).ToList();
 
         var players = g.Players.OrderBy(p => p.Rank).ThenByDescending(p => p.Score).ThenBy(p => p.Seat).Select(p =>
@@ -224,7 +249,11 @@ public sealed partial class GameService
     private static HistoryPart Piece(string prefix, QuizItem it, bool ok) =>
         !string.IsNullOrWhiteSpace(it.Text) || string.IsNullOrWhiteSpace(it.Image)
             ? new HistoryPart($"{prefix} {ItemText(it)}", ok) : new HistoryPart(prefix, ok, it.Image);
-    private static HistoryPart Pair(QuizItem left, QuizItem right, bool ok) => Piece($"{ItemText(left)} →", right, ok);
+    /// <summary>"Left → right"; a left side that is only a picture (a flag) is shown as that picture.</summary>
+    private static HistoryPart Pair(QuizItem left, QuizItem right, bool ok) =>
+        string.IsNullOrWhiteSpace(left.Text) && !string.IsNullOrWhiteSpace(left.Image)
+            ? Piece("→", right, ok) with { LeftImage = left.Image }
+            : Piece($"{ItemText(left)} →", right, ok);
     private static string Option(Question q, int i) =>
         i >= 0 && i < q.EffectiveOptions.Count ? $"{(char)('A' + i)}: {q.EffectiveOptions[i]}" : "?";
 

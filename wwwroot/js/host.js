@@ -102,6 +102,8 @@
         ${detail(s)}
       </section>
       <button class="btn plastic big ${p.cls || ''}" data-act="${p.act}" ${p.disabled ? 'disabled' : ''} ${p.confirm ? `data-confirm="${esc(p.confirm)}"` : ''}>${p.label}</button>
+      ${s.phase === 'Question' ? `<button class="btn light plastic" data-act="EndQuestion"
+        data-confirm="End this question now? Answers given so far are scored and the answer is shown.">End question now</button>` : ''}
       <button class="btn light plastic" id="togglePlayers" type="button">${showPlayers ? 'Hide players' : `Players (${players.length})`}</button>
       ${showPlayers ? `<ul class="remote-players">${players.map(pl => `
         <li class="${pl.connected ? '' : 'offline'}">${face(pl)}<span class="nm">${esc(pl.nickname)}</span><span class="num">${fmt(pl.score)}</span>

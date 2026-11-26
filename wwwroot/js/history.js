@@ -9,7 +9,7 @@ const QvizzHistory = (() => {
   const TYPE = { MultipleChoice: 'Multiple choice', TrueFalse: 'True or false', Grouping: 'Matching', ClosestNumber: 'Closest number', Ordering: 'Ordering' };
   const when = iso => iso ? new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
   const pts = n => `${n > 0 ? '+' : ''}${fmt(n)}`;
-  const part = x => esc(x.text) + (x.image ? ` <img src="${esc(x.image)}" alt="">` : '');
+  const part = x => (x.leftImage ? `<img src="${esc(x.leftImage)}" alt=""> ` : '') + esc(x.text) + (x.image ? ` <img src="${esc(x.image)}" alt="">` : '');
   const secs = ms => ms == null ? '' : `${(ms / 1000).toFixed(1)} s`;
 
   function init(connection, stateFn) {
@@ -34,6 +34,21 @@ const QvizzHistory = (() => {
     if (view?.kind === 'game') render();
   }
 
+  // A test run or a game nobody needs: gone for good, after a confirmation.
+  async function removeGame(id) {
+    const g = view?.games?.find(x => x.id === id);
+    if (!g) return;
+    const label = `${g.title} from ${when(g.startedAt || g.createdAt)} (${g.players} player${g.players === 1 ? '' : 's'})`;
+    if (!confirm(`Delete ${label}?\n\nIts standings, answers and players' drawings are removed for good. This can't be undone.`)) return;
+    try {
+      const err = await conn.invoke('DeleteGame', id);
+      if (err) { Qvizz.toast(err); return; }
+      view.games = view.games.filter(x => x.id !== id);
+      render();
+      Qvizz.toast('Game deleted.');
+    } catch (e) { Qvizz.toast(e.message); }
+  }
+
   function close() { view = null; const p = panel(); p.classList.add('hidden'); p.innerHTML = ''; }
 
   /** The full standings follow the live game, so they close when the game moves on (e.g. a new game starts). */
@@ -49,6 +64,7 @@ const QvizzHistory = (() => {
     else if (what === 'close') close();
     else if (what === 'list') open('list');
     else if (what === 'game') openGame(arg);
+    else if (what === 'del') removeGame(arg);
     else if (what === 'tab') { view.tab = arg; render(); }
     else if (what === 'q') { view.tab = 'questions'; view.q = +arg; render(); }
   }
@@ -85,12 +101,15 @@ const QvizzHistory = (() => {
     if (!view.games) return head + loading();
     if (!view.games.length) return head + '<p class="hist-empty">No games have been played yet.</p>';
     const rows = view.games.map(g => `
+      <div class="hist-row">
       <button type="button" class="hist-game" data-hist="game:${g.id}">
         <span class="when">${esc(when(g.startedAt || g.createdAt))}${g.current ? ' <em>this game</em>' : ''}</span>
         <span class="ttl">${esc(g.title)}</span>
-        <span class="meta">${g.players} players · ${g.questionsPlayed}${g.questionCount ? ` of ${g.questionCount}` : ''} questions${g.finishedAt ? '' : ' · not finished'}</span>
+        <span class="meta">${g.players} player${g.players === 1 ? '' : 's'} · ${g.questionsPlayed}${g.questionCount ? ` of ${g.questionCount}` : ''} questions${g.finishedAt ? '' : ' · not finished'}</span>
         <span class="win">${g.winner ? `🏆 ${esc(g.winner)} <b>${fmt(g.winnerScore)}</b>` : ''}</span>
-      </button>`).join('');
+      </button>
+      ${g.current ? '<span class="hist-del" aria-hidden="true" style="visibility:hidden">Delete</span>' : `<button type="button" class="hist-del" data-hist="del:${g.id}" title="Delete this game" aria-label="Delete this game">Delete</button>`}
+      </div>`).join('');
     return head + `<div class="hist-games">${rows}</div>`;
   }
 
@@ -105,7 +124,7 @@ const QvizzHistory = (() => {
       ? '<p class="hist-note">This game was saved before games kept their own copy of the questions, so the questions come from the current quiz file and may have changed since.</p>' : '';
     const content = { standings, answers: answerGrid, questions: questionView, awards: awardList }[view.tab](g);
     return `<header class="hist-head"><div>${back}<h2>${esc(s.title)}</h2>
-        <p>${esc(when(s.startedAt || s.createdAt))} · ${s.players} players · ${s.questionsPlayed}${s.questionCount ? ` of ${s.questionCount}` : ''} questions${s.finishedAt ? '' : ' · not finished'}</p></div>${closeBtn}</header>
+        <p>${esc(when(s.startedAt || s.createdAt))} · ${s.players} player${s.players === 1 ? '' : 's'} · ${s.questionsPlayed}${s.questionCount ? ` of ${s.questionCount}` : ''} questions${s.finishedAt ? '' : ' · not finished'}</p></div>${closeBtn}</header>
       ${note}<nav class="hist-tabs" role="tablist">${tabs}</nav>${content}`;
   }
 
@@ -149,7 +168,7 @@ const QvizzHistory = (() => {
     return `<nav class="hist-qs" aria-label="Questions">${pick}</nav>
       <section class="hist-q">
         ${q.image ? `<img src="${esc(q.image)}" alt="">` : ''}
-        <div><small>Question ${i + 1} · ${TYPE[q.type] || q.type}</small><h3>${esc(q.text)}</h3>${correct}</div>
+        <div><small>Question ${i + 1} · ${TYPE[q.type] || q.type}</small><h3>${esc(q.text)}</h3>${correct}${q.explanation ? `<p class="hist-why">${esc(q.explanation)}</p>` : ''}</div>
       </section>
       ${scored ? `<table class="hist-ans"><tbody>${people}</tbody></table>` : '<p class="hist-empty">This question was not played.</p>'}`;
   }

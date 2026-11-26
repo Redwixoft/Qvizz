@@ -2,7 +2,7 @@
 // Types: MultipleChoice, TrueFalse, Grouping, ClosestNumber
 // Images are paths under wwwroot, e.g. "/images/my-photo.jpg".
 {
-  "name": "Crypto Party Quiz",
+  "name": "BTCS Slovakia Christmas Party",
   // Christmas look: snow (with the odd bitcoin), Santa hats, garland, gifts, holiday ticker in the lobby.
   // Set to false to switch it all off.
   "festive": true,
@@ -30,13 +30,13 @@
     },
     {
       "type": "Grouping",
-      "text": "Bitcoin Suisse has branches in these countries. Match each country with its flag.",
+      "text": "Bitcoin Suisse has branches in these countries. Match each flag with its country.",
       "pairs": [
-        { "left": { "text": "Denmark" },              "right": { "image": "/images/btcs-christmas-quiz/denmark.png" } },
-        { "left": { "text": "Vietnam" },              "right": { "image": "/images/btcs-christmas-quiz/vietnam.webp" } },
-        { "left": { "text": "Bermuda" },              "right": { "image": "/images/btcs-christmas-quiz/bermuda.jpg" } },
-        { "left": { "text": "United Arab Emirates" }, "right": { "image": "/images/btcs-christmas-quiz/uae.webp" } },
-        { "left": { "text": "Liechtenstein" },        "right": { "image": "/images/btcs-christmas-quiz/liechtenstein.webp" } }
+        { "left": { "image": "/images/btcs-christmas-quiz/denmark.png" }, "right": { "text": "Denmark" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/vietnam.webp" }, "right": { "text": "Vietnam" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/bermuda.jpg" }, "right": { "text": "Bermuda" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/uae.webp" }, "right": { "text": "United Arab Emirates" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/liechtenstein.webp" }, "right": { "text": "Liechtenstein" } }
       ]
     },
     {
@@ -72,11 +72,11 @@
       "type": "Grouping",
       "text": "Match each colleague with their country of origin.",
       "pairs": [
-        { "left": { "image": "/images/btcs-christmas-quiz/geovanna.png",  "text": "Geovanna" },          "right": { "text": "Ecuador" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/yuliia.jpg",    "text": "Yuliia" },            "right": { "text": "Ukraine" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/michaela.jpg",  "text": "Michaela" },   "right": { "text": "Czech Republic" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/geovanna.png",  "text": "Geovanna" },  "right": { "text": "Ecuador" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/anna.png",      "text": "Anna" },      "right": { "text": "Ukraine" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/michaela.jpg",  "text": "Michaela" },  "right": { "text": "Czech Republic" } },
         { "left": { "image": "/images/btcs-christmas-quiz/magdalena.jpg", "text": "Magdalena" }, "right": { "text": "Bulgaria" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/kristinab.jpg", "text": "Kristína" }, "right": { "text": "Slovakia" } }
+        { "left": { "image": "/images/btcs-christmas-quiz/kristinab.jpg", "text": "Kristína" },  "right": { "text": "Slovakia" } }
       ]
     },
     {
@@ -89,6 +89,8 @@
     {
       "type": "MultipleChoice",
       "text": "Which colleague ran for the local council in the recent elections?",
+      "explanation": "Martin Opoldus got 1777 votes in total and was elected.",
+      "explanationImage": "/images/btcs-christmas-quiz/martin-real.jpg",
       "image": "/images/btcs-christmas-quiz/opoldus.jpg",
       "options": ["Martin", "Andrej", "Katka", "Boris"],
       "optionImages": ["/images/btcs-christmas-quiz/martin.jpg", "/images/btcs-christmas-quiz/andrej.png", "/images/btcs-christmas-quiz/katka.png", "/images/btcs-christmas-quiz/boris.jpg"],
@@ -112,11 +114,11 @@
       "type": "Grouping",
       "text": "Match each colleague with their position.",
       "pairs": [
-        { "left": { "image": "/images/btcs-christmas-quiz/jakub.png",   "text": "Jakub" },  "right": { "text": "Senior Developer" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/michalp.png", "text": "Michal" }, "right": { "text": "Risk Officer" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/jakub.png",   "text": "Jakub" },   "right": { "text": "Senior Developer" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/michalp.png", "text": "Michal" },  "right": { "text": "Risk Officer" } },
         { "left": { "image": "/images/btcs-christmas-quiz/martina.jpg", "text": "Martina" }, "right": { "text": "Vendor Manager" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/maros.png",   "text": "Maroš" },  "right": { "text": "Data Engineer" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/julian.png",  "text": "Julian" }, "right": { "text": "Microsoft 365 & Azure Cloud Engineer" } }
+        { "left": { "image": "/images/btcs-christmas-quiz/maros.png",   "text": "Maroš" },   "right": { "text": "Data Engineer" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/julian.png",  "text": "Julian" },  "right": { "text": "Microsoft 365 & Azure Cloud Engineer" } }
       ]
     },
     {
@@ -125,7 +127,7 @@
       "pairs": [
         { "left": { "image": "/images/btcs-christmas-quiz/erik.jpg",   "text": "Erik" },   "right": { "text": "1markosh" } },
         { "left": { "image": "/images/btcs-christmas-quiz/lujza.png",  "text": "Lujza" },  "right": { "text": "magical_breeze" } },
-        { "left": { "image": "/images/btcs-christmas-quiz/anna.png",   "text": "Anna" },   "right": { "text": "_.annaverse._" } },
+        { "left": { "image": "/images/btcs-christmas-quiz/yuliia.jpg", "text": "Yuliia" }, "right": { "text": "julsline" } },
         { "left": { "image": "/images/btcs-christmas-quiz/tomas.jpg",  "text": "Tomáš" },  "right": { "text": "redwicek" } },
         { "left": { "image": "/images/btcs-christmas-quiz/linda.jpg",  "text": "Linda" },  "right": { "text": "thatgirlnamedlinda" } }
       ]
@@ -157,6 +159,15 @@
       "text": "When you log in to ClickTime, you have to fill in the organization ID. What is it for Bitcoin Suisse?",
       "image": "/images/btcs-christmas-quiz/clicktime.jpg",
       "correctNumber": 1455
+    },
+    // Keep this one LAST: new questions go before it.
+    {
+      "type": "ClosestNumber",
+      "text": "What was the price of Bitcoin in USD today at 8 am?",
+      "image": "/images/btcs-christmas-quiz/bitcoin.jpg",
+      // TODO: 58123 is only a placeholder - fill in the real price on the day of the quiz.
+      "correctNumber": 58123,
+      "unit": "USD"
     }
   ]
 }

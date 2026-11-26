@@ -34,6 +34,11 @@ public sealed class Question
     public string Text { get; set; } = "";
     public string? Image { get; set; }
 
+    /// <summary>Optional: a few words on why the answer is right, shown with the correct answer (big screen and phones).</summary>
+    public string? Explanation { get; set; }
+    /// <summary>Optional: a picture shown with the correct answer, in place of the question's picture.</summary>
+    public string? ExplanationImage { get; set; }
+
     /// <summary>Optional override of the default time limit.</summary>
     public int? TimeLimitSeconds { get; set; }
 

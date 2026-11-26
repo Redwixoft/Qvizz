@@ -58,7 +58,11 @@ Question types: `MultipleChoice` (4 options + `correctIndex`, optional `optionIm
 `Grouping` (`pairs` of `left`/`right`, each with `text` and/or `image`), `ClosestNumber` (`correctNumber`, optional `unit`),
 `Ordering` (3-6 `items`, each with `text` and/or `image`, listed in the RIGHT order top to bottom; players get them
 shuffled; optional `topLabel` / `bottomLabel` notes beside the two ends, e.g. "Longest in the company" / "Newest").
+On the phones, matching and ordering answers are swapped by dragging one onto another, or by tapping two.
 Any question can override its time with `timeLimitSeconds`.
+Any question can have an explanation, shown with the correct answer on the big screen and on the phones:
+`"explanation": "Why the answer is right"` and/or `"explanationImage": "/images/file.jpg"` (the picture takes the place of the
+question's picture on the answer screen). Both are optional.
 Any question can have a picture: `"image": "/images/file.jpg"`. It shows large on the presenter screen only
 (landscape pictures between the question and the answers, portrait ones beside them). Use JPG/PNG/WebP around 1600px wide.
 
@@ -67,7 +71,8 @@ Any question can have a picture: `"image": "/images/file.jpg"`. It shows large o
 The final screen has **Full standings** (everyone in this game) and **Old games**: every played game, newest first,
 with its full standings, a grid of every player's answer to every question, each question with everyone's answers
 (matching and ordering show the whole arrangement), and the awards. Games are kept in the database; without one,
-old games are kept in memory until the server restarts. Games played before this feature show the current quiz's
+old games are kept in memory until the server restarts. Each old game has a small **Delete** link (e.g. for test runs): it removes the game
+with its players, drawings and answers for good, after a confirmation. The game being played can't be deleted. Games played before this feature show the current quiz's
 questions, and matching / ordering answers only as "3 of 5 right".
 
 ## Look and feel
@@ -92,5 +97,7 @@ players' drawn faces as pawns) with answers laid out like trading positions and 
   on closest number by being in the better half of all players (at least the closest). From the 3rd kept question in a
   row, each kept question earns +5 and the player gets a 🔥 on the standings. A miss or no answer resets the streak.
 - Answers can be changed until the time runs out; the time of the last change counts for the speed bonus.
-- Multiple choice / true-false end as soon as every connected player has answered. Grouping, ordering and closest-number
+- Multiple choice / true-false end 3 seconds after every connected player has answered (`Game:EarlyEndSeconds`); any answer change
+  in those 3 seconds starts them again, but a question never runs longer than its own time. The host can end any
+  question at once with **End question** (presenter corner, or the host remote). Grouping, ordering and closest-number
   always run the full time, and whatever is on the player's phone at that moment is scored.

@@ -216,14 +216,14 @@
     } else if (q.type === 'Grouping') {
       if (!grouping || grouping.qi !== s.questionIndex)
         grouping = { qi: s.questionIndex, order: s.myGrouping ? [...s.myGrouping] : q.groupRight.map((_, i) => i), selected: null };
-      body = `<p class="pstatus">Tap two answers on the right to swap them.</p><div class="pairs" id="pairs"></div>`;
+      body = `<p class="pstatus">Drag an answer on the right onto another to swap them, or tap two answers.</p><div class="pairs" id="pairs"></div>`;
     } else if (q.type === 'Ordering') {
       // same "tap two to swap" as matching; grouping.order[place] = which shown item stands in that place
       if (!grouping || grouping.qi !== s.questionIndex)
         grouping = { qi: s.questionIndex, order: s.myGrouping ? [...s.myGrouping] : q.orderItems.map((_, i) => i), selected: null };
       const rail = q.topLabel || q.bottomLabel
         ? `<div class="rail"><b>${esc(q.topLabel || '')}</b><i aria-hidden="true"></i><b>${esc(q.bottomLabel || '')}</b></div>` : '';
-      body = `<p class="pstatus">Tap two items to swap them.</p><div class="order ${rail ? '' : 'no-rail'}">${rail}<div class="olist" id="olist"></div></div>`;
+      body = `<p class="pstatus">Drag an item onto another to swap them, or tap two items.</p><div class="order ${rail ? '' : 'no-rail'}">${rail}<div class="olist" id="olist"></div></div>`;
     } else {
       body = `<form class="panel" id="numForm">
           <label for="num">Your guess</label>
@@ -289,25 +289,13 @@
   }
 
   function renderPairs(q) {
-    $('#pairs').innerHTML = q.groupLeft.map((l, row) => `
+    const list = $('#pairs');
+    list.innerHTML = q.groupLeft.map((l, row) => `
       <div class="pair pair-${row % 6} plastic">
         <span class="cell l">${item(l)}</span>
         <button type="button" class="cell m ${grouping.selected === row ? 'sel' : ''}" data-row="${row}">${item(q.groupRight[grouping.order[row]])}</button>
       </div>`).join('');
-    $('#pairs').querySelectorAll('.m').forEach(b => b.onclick = () => {
-      const row = +b.dataset.row;
-      if (grouping.selected === null) { grouping.selected = row; renderPairs(q); return; }
-      const o = grouping.order, a = grouping.selected;
-      grouping.selected = null;
-      if (a === row) { renderPairs(q); return; }
-      // remember where both answers were, swap, redraw, then slide each one in from its old spot
-      const cells = () => [...$('#pairs').querySelectorAll('.m')];
-      const before = cells().map(c => c.getBoundingClientRect());
-      [o[a], o[row]] = [o[row], o[a]];
-      send('AnswerGrouping', [...o]);
-      renderPairs(q);
-      animateSwap(cells(), before, a, row);
-    });
+    swappable(list, () => renderPairs(q));
   }
 
   function renderOrder(q) {
@@ -315,19 +303,75 @@
     list.innerHTML = grouping.order.map((shown, place) => `
       <div class="orow"><span class="n">${place + 1}</span>
         <button type="button" class="cell m ${grouping.selected === place ? 'sel' : ''}" data-row="${place}">${item(q.orderItems[shown])}</button></div>`).join('');
-    list.querySelectorAll('.m').forEach(b => b.onclick = () => {
-      const row = +b.dataset.row;
-      if (grouping.selected === null) { grouping.selected = row; renderOrder(q); return; }
-      const o = grouping.order, a = grouping.selected;
+    swappable(list, () => renderOrder(q));
+  }
+
+  // Matching and ordering answers can be swapped two ways: tap one, then another; or drag one onto another
+  // (finger or mouse). Either way the two trade places, the new arrangement is saved, and they glide into place.
+  function swappable(list, rerender) {
+    const cells = () => [...list.querySelectorAll('.m')];
+    const swap = (a, b) => {
       grouping.selected = null;
-      if (a === row) { renderOrder(q); return; }
-      const cells = () => [...$('#olist').querySelectorAll('.m')];
+      if (a === b) { rerender(); return; }
       const before = cells().map(c => c.getBoundingClientRect());
-      [o[a], o[row]] = [o[row], o[a]];
+      const o = grouping.order;
+      [o[a], o[b]] = [o[b], o[a]];
       send('AnswerGrouping', [...o]);
-      renderOrder(q);
-      animateSwap(cells(), before, a, row);
-    });
+      rerender();
+      animateSwap(cells(), before, a, b);
+    };
+    let drag = null, quietUntil = 0;   // a drag ends with a click event: ignore that one
+
+    for (const b of cells()) {
+      const row = +b.dataset.row;
+      b.onclick = () => {
+        if (Date.now() < quietUntil) return;
+        if (grouping.selected === null) { grouping.selected = row; rerender(); return; }
+        swap(grouping.selected, row);
+      };
+      b.onpointerdown = ev => {
+        if (ev.button > 0) return;
+        drag = { from: row, el: b, x: ev.clientX, y: ev.clientY, ghost: null, over: null };
+        try { b.setPointerCapture(ev.pointerId); } catch { /* keep following the pointer without capture */ }
+      };
+      b.onpointermove = ev => {
+        if (!drag || drag.el !== b) return;
+        const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+        if (!drag.ghost) {
+          if (Math.hypot(dx, dy) < 8) return;   // still a tap
+          const r = b.getBoundingClientRect();
+          const g = b.cloneNode(true);
+          g.classList.remove('sel');
+          g.classList.add('drag-ghost');
+          g.setAttribute('aria-hidden', 'true');
+          Object.assign(g.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+          list.append(g);
+          b.classList.add('dragging');
+          drag.ghost = g;
+        }
+        drag.ghost.style.transform = `translate(${dx}px, ${dy}px) rotate(-1.5deg) scale(1.04)`;
+        const under = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.m');
+        const target = under && under !== b && list.contains(under) && !under.classList.contains('drag-ghost') ? under : null;
+        if (target !== drag.over) {
+          drag.over?.classList.remove('drop');
+          target?.classList.add('drop');
+          drag.over = target;
+        }
+      };
+      const end = ev => {
+        if (!drag || drag.el !== b) return;
+        const d = drag;
+        drag = null;
+        if (!d.ghost) return;                     // it was a tap: the click handles it
+        quietUntil = Date.now() + 400;
+        d.ghost.remove();
+        b.classList.remove('dragging');
+        d.over?.classList.remove('drop');
+        if (ev.type === 'pointerup' && d.over) swap(d.from, +d.over.dataset.row);
+      };
+      b.onpointerup = end;
+      b.onpointercancel = end;
+    }
   }
 
   // The two swapped answers glide past each other into their new rows and flash gold,
@@ -367,6 +411,7 @@
         ${r.streakBonus ? `<div class="streak-line">🔥 ${r.streak} in a row: +${r.streakBonus} streak bonus</div>` : ''}
         ${detail ? `<div class="sub">${esc(detail)}</div>` : ''}
         ${s.correctAnswer ? `<div class="sub">Answer: ${answerHtml(s.correctAnswer)}</div>` : ''}
+        ${s.explanation || s.explanationImage ? `<div class="explain">${s.explanationImage ? `<img src="${esc(s.explanationImage)}" alt="">` : ''}${s.explanation ? `<p>${esc(s.explanation)}</p>` : ''}</div>` : ''}
       </div>
       <div class="rankline">You are #${s.me.rank} of ${s.playerCount}${m.n ? `<span class="mv ${m.cls}">${m.icon}${m.n}</span>` : ''}</div>
       ${s.boost ? `<div class="boost">${s.boostRival ? face(s.boostRival) : ''}<span>${esc(s.boost)}</span></div>` : ''}
