@@ -44,6 +44,8 @@ app.MapGet("/game", (IWebHostEnvironment env) => Results.File(Path.Combine(env.W
 app.MapGet("/host", (IWebHostEnvironment env) => Results.File(Path.Combine(env.WebRootPath, "host.html"), "text/html"));
 // Look switches from quiz.json, read by the presenter and phone pages on load.
 app.MapGet("/look.json", (GameService game) => Results.Json(new { festive = game.Quiz.Festive }));
+// Browsers ask for /favicon.ico on their own; answer with the PNG version of the icon.
+app.MapGet("/favicon.ico", (IWebHostEnvironment env) => Results.File(Path.Combine(env.WebRootPath, "favicon-32.png"), "image/png"));
 app.MapGet("/avatar/{id:guid}", async (Guid id, GameService game) =>
     await game.GetAvatarAsync(id) is { } png ? Results.File(png, "image/png") : Results.NotFound());
 

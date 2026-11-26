@@ -34,7 +34,7 @@ public sealed class Question
     public string Text { get; set; } = "";
     public string? Image { get; set; }
 
-    /// <summary>Optional: a few words on why the answer is right, shown with the correct answer (big screen and phones).</summary>
+    /// <summary>Optional: a few words on why the answer is right, shown with the correct answer on the big screen.</summary>
     public string? Explanation { get; set; }
     /// <summary>Optional: a picture shown with the correct answer, in place of the question's picture.</summary>
     public string? ExplanationImage { get; set; }
@@ -73,6 +73,14 @@ public sealed class Question
     /// <summary>How many pieces players move around: grouping pairs or ordering items.</summary>
     [JsonIgnore]
     public int Pieces => Type switch { QuestionType.Grouping => Pairs.Count, QuestionType.Ordering => Items.Count, _ => 0 };
+
+    /// <summary>"B: Noël"; an option that is only a picture (empty text) is "B (picture)".</summary>
+    public string OptionLabel(int i)
+    {
+        if (i < 0 || i >= EffectiveOptions.Count) return "?";
+        var letter = (char)('A' + i);
+        return string.IsNullOrWhiteSpace(EffectiveOptions[i]) ? $"{letter} (picture)" : $"{letter}: {EffectiveOptions[i]}";
+    }
 
     [JsonIgnore]
     public int EffectiveCorrectIndex =>

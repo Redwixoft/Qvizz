@@ -54,13 +54,14 @@ a live copy in memory so phones get instant responses.
 ## Quiz content
 
 Edit `Quiz/quiz.json` and restart. Put images in `wwwroot/images/` and reference them as `/images/file.jpg`.
-Question types: `MultipleChoice` (4 options + `correctIndex`, optional `optionImages`: 4 pictures shown with the options), `TrueFalse` (`correctBool`),
+Question types: `MultipleChoice` (4 options + `correctIndex`, optional `optionImages`: 4 pictures shown with the options;
+with empty option texts (`""`) the answers are only the pictures, shown large), `TrueFalse` (`correctBool`),
 `Grouping` (`pairs` of `left`/`right`, each with `text` and/or `image`), `ClosestNumber` (`correctNumber`, optional `unit`),
 `Ordering` (3-6 `items`, each with `text` and/or `image`, listed in the RIGHT order top to bottom; players get them
 shuffled; optional `topLabel` / `bottomLabel` notes beside the two ends, e.g. "Longest in the company" / "Newest").
 On the phones, matching and ordering answers are swapped by dragging one onto another, or by tapping two.
 Any question can override its time with `timeLimitSeconds`.
-Any question can have an explanation, shown with the correct answer on the big screen and on the phones:
+Any question can have an explanation, shown with the correct answer on the big screen (not on the phones):
 `"explanation": "Why the answer is right"` and/or `"explanationImage": "/images/file.jpg"` (the picture takes the place of the
 question's picture on the answer screen). Both are optional.
 Any question can have a picture: `"image": "/images/file.jpg"`. It shows large on the presenter screen only

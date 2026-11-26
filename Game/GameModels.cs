@@ -118,7 +118,7 @@ public sealed record RevealInfo(
     IReadOnlyList<PlayerSummary> FirstCorrect,
     int CorrectPlayers,
     int AnsweredPlayers,
-    /// <summary>The question's optional explanation, shown with the correct answer.</summary>
+    /// <summary>The question's optional explanation, shown with the correct answer on the big screen only.</summary>
     string? Explanation = null,
     string? ExplanationImage = null);
 
@@ -164,9 +164,7 @@ public sealed record PlayerView(
     PlayerSummary? BoostRival,
     IReadOnlyList<AwardView> MyAwards,
     bool Paused,
-    IReadOnlyList<RecapItem> Recap,
-    string? Explanation = null,
-    string? ExplanationImage = null);
+    IReadOnlyList<RecapItem> Recap);
 
 /// <summary>One line of a player's end-of-game recap: their answer next to the right one.</summary>
 public sealed record RecapItem(int Number, string Question, string YourAnswer, string? CorrectAnswer, int Points, bool Correct, bool Answered);

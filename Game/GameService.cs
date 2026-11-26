@@ -917,7 +917,7 @@ public sealed partial class GameService
             correctAnswer = q.Type switch
             {
                 QuestionType.MultipleChoice or QuestionType.TrueFalse =>
-                    $"{(char)('A' + q.EffectiveCorrectIndex)}: {q.EffectiveOptions[q.EffectiveCorrectIndex]}",
+                    q.OptionLabel(q.EffectiveCorrectIndex),
                 QuestionType.ClosestNumber => $"{Fmt(q.CorrectNumber!.Value)}{(q.Unit is null ? "" : " " + q.Unit)}",
                 _ => null
             };
@@ -937,9 +937,7 @@ public sealed partial class GameService
             showResult ? rival : null,
             _phase is Phase.Awards or Phase.Finished ? AwardViews().Where(a => a.Winner.Id == p.Id).ToList() : [],
             _pausedRemaining is not null,
-            _phase == Phase.Finished ? Recap(p) : [],
-            showResult ? Blank(CurrentQuestion.Explanation) : null,
-            showResult ? Blank(CurrentQuestion.ExplanationImage) : null);
+            _phase == Phase.Finished ? Recap(p) : []);
     }
 
     /// <summary>The player's answers next to the right ones, for the final phone screen.</summary>
@@ -951,7 +949,7 @@ public sealed partial class GameService
             var q = Quiz.Questions[i];
             p.History.TryGetValue(i, out var r);
             var answered = r?.Answered == true;
-            string Opt(int idx) => $"{(char)('A' + idx)}: {q.EffectiveOptions[idx]}";
+            string Opt(int idx) => q.OptionLabel(idx);
             string Num(double v) => Fmt(v) + (q.Unit is null ? "" : " " + q.Unit);
             var (yours, correct) = q.Type switch
             {

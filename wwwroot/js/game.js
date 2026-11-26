@@ -211,7 +211,8 @@
     let body = '';
     if (q.type === 'MultipleChoice' || q.type === 'TrueFalse') {
       const pic = i => q.optionImages?.[i] ? `<img class="opic" src="${esc(q.optionImages[i])}" alt="">` : '';
-      body = `<div class="answers ${q.type === 'TrueFalse' ? 'tf' : ''}">${q.options.map((o, i) => `
+      const picsOnly = (q.optionImages || []).some(Boolean) && q.options.every(o => !String(o || '').trim());
+      body = `<div class="answers ${q.type === 'TrueFalse' ? 'tf' : ''} ${picsOnly ? 'pics-only' : ''}">${q.options.map((o, i) => `
         <button class="abtn ${optClass(q.type, i)} plastic" data-i="${i}" type="button"><b class="tok">${LETTERS[i]}</b>${pic(i)}<span class="t">${esc(o)}</span></button>`).join('')}</div>`;
     } else if (q.type === 'Grouping') {
       if (!grouping || grouping.qi !== s.questionIndex)
@@ -411,7 +412,6 @@
         ${r.streakBonus ? `<div class="streak-line">🔥 ${r.streak} in a row: +${r.streakBonus} streak bonus</div>` : ''}
         ${detail ? `<div class="sub">${esc(detail)}</div>` : ''}
         ${s.correctAnswer ? `<div class="sub">Answer: ${answerHtml(s.correctAnswer)}</div>` : ''}
-        ${s.explanation || s.explanationImage ? `<div class="explain">${s.explanationImage ? `<img src="${esc(s.explanationImage)}" alt="">` : ''}${s.explanation ? `<p>${esc(s.explanation)}</p>` : ''}</div>` : ''}
       </div>
       <div class="rankline">You are #${s.me.rank} of ${s.playerCount}${m.n ? `<span class="mv ${m.cls}">${m.icon}${m.n}</span>` : ''}</div>
       ${s.boost ? `<div class="boost">${s.boostRival ? face(s.boostRival) : ''}<span>${esc(s.boost)}</span></div>` : ''}

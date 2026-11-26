@@ -255,7 +255,7 @@ public sealed partial class GameService
             ? Piece("→", right, ok) with { LeftImage = left.Image }
             : Piece($"{ItemText(left)} →", right, ok);
     private static string Option(Question q, int i) =>
-        i >= 0 && i < q.EffectiveOptions.Count ? $"{(char)('A' + i)}: {q.EffectiveOptions[i]}" : "?";
+        q.OptionLabel(i);
 
     private static (string? Text, IReadOnlyList<HistoryPart> Parts) CorrectAnswer(Question q) => q.Type switch
     {
